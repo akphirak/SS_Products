@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Quote Suite v15</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --primary: #1e40af; --success: #059669; --text: #1e293b; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; padding: 20px; color: var(--text); }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        
+        /* SIDEBAR SEARCH */
+        .sidebar { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); height: fit-content; }
+        .search-container { position: relative; margin-bottom: 20px; }
+        .search-input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .search-input:focus { border-color: var(--primary); }
+        
+        /* THE DROPDOWN RESULT ITEM */
+        .search-results-list { 
+            position: absolute; width: 100%; max-height: 450px; overflow-y: auto; 
+            background: white; border: 1px solid #cbd5e1; border-radius: 8px; 
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 100; display: none; margin-top: 5px;
+        }
+        .result-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+        .result-item:hover { background: #f8fafc; border-left: 4px solid var(--primary); }
+        .result-row-one { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .res-model { font-weight: 800; color: #0f172a; font-size: 1rem; }
+        .res-price { font-weight: 800; color: var(--success); font-size: 0.95rem; }
+        .res-desc { color: #64748b; font-size: 0.85rem; line-height: 1.4; display: block; font-style: normal; }
+
+        /* FORM ELEMENTS */
+        input[type="number"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
+        .btn { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: opacity 0.2s; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-pdf { background: var(--success); color: white; font-size: 1.1rem; margin-top: 25px; }
+        
+        /* PDF DOCUMENT PREVIEW */
+        #quote-pdf { background: white; width: 794px; min-height: 1050px; padding: 50px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .quote-header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 30px; }
+        .quote-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .quote-table th { background: #f8fafc; text-align: left; padding: 12px; border-bottom: 2px solid #e2e8f0; font-size: 0.75rem; text-transform: uppercase; }
+        .quote-table td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: top; }
+        .editable { border: 1px dashed transparent; outline: none; }
+        .editable:hover { background: #f0f9ff; border-color: #3b82f6; }
+        .totals-area { text-align: right; margin-top: auto; border-top: 2px solid var(--primary); padding-top: 20px; }
+        .total-large { font-size: 2.2rem; color: var(--primary); font-weight: 900; }
+        .no-pdf { display: table-cell; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="sidebar">
+        <h2 style="margin-top:0; color:var(--primary);">Quote Studio</h2>
+        
+        <div class="search-container">
+            <strong>🔍 Product Search:</strong>
+            <input type="text" id="mSearch" class="search-input" placeholder="Type first 4 letters..." oninput="handleSearch()">
+            <div id="resultsList" class="search-results-list"></div>
+        </div>
+
+        <div id="selectionBox" style="display:none; background:#f0f9ff; padding:15px; border-radius:10px; border:1px solid #bae6fd; margin-bottom:20px;">
+            <div id="dispModel" style="font-weight:bold; color:var(--primary);"></div>
+            <div id="dispDesc" style="font-size:0.8rem; color:#64748b; margin:8px 0;"></div>
+            <label>Quantity:</label>
+            <input type="number" id="inQty" value="1" min="1">
+            <button class="btn btn-blue" onclick="addItem()">Add to Quote</button>
+        </div>
+
+        <label>1. Load CSV File:</label>
+        <input type="file" id="csvIn" accept=".csv">
+        <button class="btn" style="background:#cbd5e1; color:#475569; margin-top:10px;" onclick="location.reload()">Clear All</button>
+    </div>
+
+    <div class="preview-area">
+        <div id="quote-pdf">
+            <div class="quote-header">
+                <div>
+                    <h1 style="margin:0; color:var(--primary); font-size: 2.5rem;">QUOTATION</h1>
+                    <p>Ref: <span id="qNum" class="editable" contenteditable="true">#0000</span> | Date: <span id="qDate"></span></p>
+                </div>
+                <div style="text-align: right; font-size: 0.85rem;">
+                    <strong class="editable" contenteditable="true" style="font-size:1.1rem;">COMPANY NAME</strong><br>
+                    <span class="editable" contenteditable="true">Street Address, City, Country</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; font-size: 0.85rem;">
+                <div>
+                    <strong style="color:var(--primary)">CLIENT:</strong>
+                    <div class="editable" contenteditable="true" style="font-weight:bold; font-size:1.1rem; margin-top:5px;">Customer Name</div>
+                    <div class="editable" contenteditable="true">Contact Details / Address</div>
+                </div>
+                <div>
+                    <strong style="color:var(--primary)">PROJECT:</strong>
+                    <div class="editable" contenteditable="true" style="font-weight:bold; margin-top:5px;">Project Description</div>
+                    <div class="editable" contenteditable="true" style="min-height:3em;">Site Location & Shipping Notes</div>
+                </div>
+            </div>
+
+            <table class="quote-table" id="quoteTable">
+                <thead>
+                    <tr>
+                        <th style="width:55%">ITEM & SPECIFICATION</th>
+                        <th style="width:15%">UNIT PRICE</th>
+                        <th style="width:10%">QTY</th>
+                        <th style="width:20%">TOTAL</th>
+                        <th class="no-pdf" style="width:5%"></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div class="totals-area">
+                <div style="display:flex; justify-content: flex-end; gap:30px; font-size:0.9rem;">
+                    <span>SUBTOTAL:</span><span id="subTot">$0.00</span>
+                </div>
+                <div style="display:flex; justify-content: flex-end; gap:30px; margin:8px 0; font-size:0.9rem; color:#64748b;">
+                    <span>VAT (<span id="vRate" contenteditable="true" oninput="renderItems()">10</span>%):</span><span id="vAmt">$0.00</span>
+                </div>
+                <div class="total-large">
+                    <small style="font-size:0.8rem; font-weight:normal; vertical-align:middle;">TOTAL AMOUNT: </small>
+                    <span id="grandTot">$0.00</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-pdf" onclick="generatePDF()">💾 Download Quote PDF</button>
+    </div>
+</div>
+
+<script>
+    let rawData = [];
+    let cart = [];
+    let currentPick = null;
+
+    document.getElementById('qDate').innerText = new Date().toLocaleDateString();
+    document.getElementById('qNum').innerText = "#" + Math.floor(1000 + Math.random() * 9000);
+
+    // CSV HANDLER (EXPLICIT MAPPING)
+    document.getElementById('csvIn').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const rows = reader.result.split('\n').filter(r => r.trim() !== "");
+            rawData = rows.slice(1).map(row => {
+                const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Regex for commas in quotes
+                return {
+                    model: c[1] ? c[1].replace(/"/g, '').trim() : "Unknown",
+                    price: c[2] ? parseFloat(c[2].replace(/[^0-9.]/g, '')) : 0,
+                    desc: c[3] ? c[3].replace(/"/g, '').trim() : "No Description"
+                };
+            }).filter(item => item.model !== "Unknown");
+            alert("Database Ready: " + rawData.length + " items loaded.");
+        };
+        reader.readAsText(e.target.files[0]);
+    });
+
+    // SEARCH (LEFT-TO-RIGHT, 4 CHARS)
+    function handleSearch() {
+        const val = document.getElementById('mSearch').value.toLowerCase();
+        const resList = document.getElementById('resultsList');
+        
+        if(val.length < 4) { resList.style.display = 'none'; return; }
+
+        const filtered = rawData.filter(i => i.model.toLowerCase().startsWith(val)).slice(0, 10);
+        
+        if(filtered.length > 0) {
+            resList.style.display = 'block';
+            resList.innerHTML = filtered.map(item => `
+                <div class="result-item" onclick="onPick('${item.model.replace(/'/g, "\\'")}', ${item.price}, '${item.desc.replace(/'/g, "\\'")}')">
+                    <div class="result-row-one">
+                        <span class="res-model">${item.model}</span>
+                        <span class="res-price">$${item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+                    </div>
+                    <span class="res-desc">${item.desc}</span>
+                </div>
+            `).join('');
+        } else {
+            resList.innerHTML = '<div class="result-item" style="color:#94a3b8">No matching model found</div>';
+            resList.style.display = 'block';
+        }
+    }
+
+    function onPick(m, p, d) {
+        currentPick = { model: m, price: p, desc: d };
+        document.getElementById('dispModel').innerText = m;
+        document.getElementById('dispDesc').innerText = d;
+        document.getElementById('selectionBox').style.display = 'block';
+        document.getElementById('resultsList').style.display = 'none';
+        document.getElementById('mSearch').value = m;
+    }
+
+    function addItem() {
+        const qty = parseInt(document.getElementById('inQty').value) || 1;
+        cart.push({...currentPick, qty: qty});
+        renderItems();
+        document.getElementById('selectionBox').style.display = 'none';
+        document.getElementById('mSearch').value = '';
+    }
+
+    function renderItems() {
+        const tbody = document.querySelector('#quoteTable tbody');
+        tbody.innerHTML = cart.map((it, idx) => `
+            <tr>
+                <td><strong style="color:var(--primary); font-size:1rem;">${it.model}</strong><br>
+                    <div style="color:#64748b; font-size:0.85rem; margin-top:5px; line-height:1.4;">${it.desc}</div>
+                </td>
+                <td>$${it.price.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                <td>${it.qty}</td>
+                <td style="font-weight:bold;">$${(it.price * it.qty).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                <td class="no-pdf"><button onclick="cart.splice(${idx},1);renderItems()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:1.2rem;">×</button></td>
+            </tr>
+        `).join('');
+
+        const sub = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+        const vatRate = parseFloat(document.getElementById('vRate').innerText) || 0;
+        const vat = sub * (vatRate / 100);
+        
+        document.getElementById('subTot').innerText = "$" + sub.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('vAmt').innerText = "$" + vat.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('grandTot').innerText = "$" + (sub + vat).toLocaleString(undefined, {minimumFractionDigits: 2});
+    }
+
+    function generatePDF() {
+        const nopdf = document.querySelectorAll('.no-pdf');
+        nopdf.forEach(el => el.style.display = 'none');
+        const element = document.getElementById('quote-pdf');
+        html2pdf().from(element).set({
+            margin: 0, filename: 'Quotation_Final.pdf', html2canvas: { scale: 3 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).save().then(() => nopdf.forEach(el => el.style.display = 'table-cell'));
+    }
+
+    // Close dropdown on click outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) document.getElementById('resultsList').style.display = 'none';
+    });
+</script>
+</body>
+</html>
