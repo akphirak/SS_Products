@@ -1,239 +1,524 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Quote Suite v15</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QuoteApp_V67_Clean</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --primary: #1e40af; --success: #059669; --text: #1e293b; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; padding: 20px; color: var(--text); }
-        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        :root { --primary: #1e40af; --ios-bg: #f2f2f7; --a4-w: 210mm; --a4-h: 297mm; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--ios-bg); margin: 0; padding: 10px; }
         
-        /* SIDEBAR SEARCH */
-        .sidebar { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); height: fit-content; }
-        .search-container { position: relative; margin-bottom: 20px; }
-        .search-input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
-        .search-input:focus { border-color: var(--primary); }
-        
-        /* THE DROPDOWN RESULT ITEM */
-        .search-results-list { 
-            position: absolute; width: 100%; max-height: 450px; overflow-y: auto; 
-            background: white; border: 1px solid #cbd5e1; border-radius: 8px; 
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); z-index: 100; display: none; margin-top: 5px;
-        }
-        .result-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
-        .result-item:hover { background: #f8fafc; border-left: 4px solid var(--primary); }
-        .result-row-one { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .res-model { font-weight: 800; color: #0f172a; font-size: 1rem; }
-        .res-price { font-weight: 800; color: var(--success); font-size: 0.95rem; }
-        .res-desc { color: #64748b; font-size: 0.85rem; line-height: 1.4; display: block; font-style: normal; }
+        .controls { background: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: sticky; top: 10px; z-index: 2000; }
+        .search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        .results-list { position: absolute; width: calc(100% - 24px); max-height: 280px; overflow-y: auto; background: white; z-index: 2001; border: 1px solid #ddd; display: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .res-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .res-item:hover { background: #f0f7ff; }
+        .res-name { font-weight: bold; color: var(--primary); display: block; }
+        .res-desc { font-size: 11px; color: #666; display: block; margin: 2px 0; }
+        .res-price { font-weight: bold; color: #059669; font-size: 13px; }
 
-        /* FORM ELEMENTS */
-        input[type="number"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
-        .btn { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: opacity 0.2s; }
-        .btn-blue { background: var(--primary); color: white; }
-        .btn-pdf { background: var(--success); color: white; font-size: 1.1rem; margin-top: 25px; }
+        .preview-area { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 50px; }
+        .page {
+            width: var(--a4-w); height: var(--a4-h); 
+            padding: 10mm 12mm 15mm 12mm; 
+            background: white; box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; position: relative;
+            overflow: hidden; page-break-after: always;
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+        .h-left-title { font-size: 22pt; font-weight: 900; text-transform: uppercase; margin: 0; line-height: 1; }
+        .comp-info-text { font-size: 8.5pt; text-align: right; line-height: 1.2; color: #333; }
+
+        .header-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; margin-top: 10px; margin-bottom: 15px; font-size: 9.5pt; }
+        .h-row { display: flex; margin-bottom: 4px; }
+        .h-label { font-weight: bold; width: 80px; flex-shrink: 0; }
+        .h-val { flex-grow: 1; border-bottom: 1px solid #eee; min-height: 15px; padding-left: 5px; }
+
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.5px solid #000; }
+        th { border: 1.2px solid #000; padding: 6px; font-size: 8.5pt; font-weight: 800; background: #f2f2f2; text-transform: uppercase; }
+        td { border: 1.2px solid #000; padding: 6px 5px; font-size: 9.5pt; vertical-align: top; line-height: 1.3; }
         
-        /* PDF DOCUMENT PREVIEW */
-        #quote-pdf { background: white; width: 794px; min-height: 1050px; padding: 50px; box-sizing: border-box; display: flex; flex-direction: column; }
-        .quote-header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 30px; }
-        .quote-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .quote-table th { background: #f8fafc; text-align: left; padding: 12px; border-bottom: 2px solid #e2e8f0; font-size: 0.75rem; text-transform: uppercase; }
-        .quote-table td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: top; }
-        .editable { border: 1px dashed transparent; outline: none; }
-        .editable:hover { background: #f0f9ff; border-color: #3b82f6; }
-        .totals-area { text-align: right; margin-top: auto; border-top: 2px solid var(--primary); padding-top: 20px; }
-        .total-large { font-size: 2.2rem; color: var(--primary); font-weight: 900; }
-        .no-pdf { display: table-cell; }
+        .col-no { width: 10mm; text-align: center; }
+        .col-uprice { width: 30mm; text-align: center; }
+        .col-qty { width: 12mm; text-align: center; }
+        .col-total { width: 35mm; text-align: center; }
+
+        .total-container { margin-top: 10px; }
+        .calc-line { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13pt; font-weight: bold; border-top: 3px solid #000; width: 95mm; margin-left: auto; }
+
+        .footer-fixed { margin-top: auto; padding-top: 15px; }
+        .terms-box { font-size: 8.5pt; line-height: 1.3; margin-bottom: 20px; padding: 8px; border: 1px solid #eee; background: #fafafa; border-radius: 4px; }
+        .sig-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8mm; text-align: center; margin-bottom: 10px; }
+        .sig-space { height: 12mm; }
+        .sig-line { border-top: 1.2px solid #000; padding-top: 5px; font-size: 8pt; font-weight: bold; text-transform: uppercase; }
+
+        .pg-num-label { position: absolute; bottom: 8mm; right: 12mm; font-size: 9pt; color: #000; font-weight: bold; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer; }
+        .editable-cell { background: #fffde7; outline: none; border-radius: 3px; }
+
+        /* Packer Interface */
+        #packerTool { background: #1a1a1a; color: #00ff00; padding: 20px; border-radius: 12px; margin-top: 50px; font-family: monospace; border: 2px solid #333; }
+        #packerTool textarea { width: 100%; height: 120px; margin: 10px 0; color: black; background: #eee; font-size: 12px; }
+
+        @media print { .del-btn, .controls, #packerTool { display: none; } .editable-cell { background: transparent; } }
     </style>
 </head>
-<body>
+<body onload="initApp()">
 
-<div class="container">
-    <div class="sidebar">
-        <h2 style="margin-top:0; color:var(--primary);">Quote Studio</h2>
-        
-        <div class="search-container">
-            <strong>🔍 Product Search:</strong>
-            <input type="text" id="mSearch" class="search-input" placeholder="Type first 4 letters..." oninput="handleSearch()">
-            <div id="resultsList" class="search-results-list"></div>
+<div class="controls">
+    <input type="text" id="mSearch" class="search-input" placeholder="Search (Start typing 4 chars)..." oninput="handleSearch()">
+    <div id="results" class="results-list"></div>
+    
+    <div id="qtyPanel" style="display:none; margin-top:10px; padding:15px; border:2px solid var(--primary); border-radius:12px; background:#f0f7ff;">
+        <div id="selName" style="font-weight:bold; margin-bottom:10px;"></div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            Qty: <input type="number" id="inQty" value="1" style="width:70px; padding:10px;">
+            <button onclick="smartAdd()" class="btn" style="background:var(--primary);">Add Item</button>
         </div>
-
-        <div id="selectionBox" style="display:none; background:#f0f9ff; padding:15px; border-radius:10px; border:1px solid #bae6fd; margin-bottom:20px;">
-            <div id="dispModel" style="font-weight:bold; color:var(--primary);"></div>
-            <div id="dispDesc" style="font-size:0.8rem; color:#64748b; margin:8px 0;"></div>
-            <label>Quantity:</label>
-            <input type="number" id="inQty" value="1" min="1">
-            <button class="btn btn-blue" onclick="addItem()">Add to Quote</button>
-        </div>
-
-        <label>1. Load CSV File:</label>
-        <input type="file" id="csvIn" accept=".csv">
-        <button class="btn" style="background:#cbd5e1; color:#475569; margin-top:10px;" onclick="location.reload()">Clear All</button>
     </div>
 
-    <div class="preview-area">
-        <div id="quote-pdf">
-            <div class="quote-header">
-                <div>
-                    <h1 style="margin:0; color:var(--primary); font-size: 2.5rem;">QUOTATION</h1>
-                    <p>Ref: <span id="qNum" class="editable" contenteditable="true">#0000</span> | Date: <span id="qDate"></span></p>
-                </div>
-                <div style="text-align: right; font-size: 0.85rem;">
-                    <strong class="editable" contenteditable="true" style="font-size:1.1rem;">COMPANY NAME</strong><br>
-                    <span class="editable" contenteditable="true">Street Address, City, Country</span>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; font-size: 0.85rem;">
-                <div>
-                    <strong style="color:var(--primary)">CLIENT:</strong>
-                    <div class="editable" contenteditable="true" style="font-weight:bold; font-size:1.1rem; margin-top:5px;">Customer Name</div>
-                    <div class="editable" contenteditable="true">Contact Details / Address</div>
-                </div>
-                <div>
-                    <strong style="color:var(--primary)">PROJECT:</strong>
-                    <div class="editable" contenteditable="true" style="font-weight:bold; margin-top:5px;">Project Description</div>
-                    <div class="editable" contenteditable="true" style="min-height:3em;">Site Location & Shipping Notes</div>
-                </div>
-            </div>
-
-            <table class="quote-table" id="quoteTable">
-                <thead>
-                    <tr>
-                        <th style="width:55%">ITEM & SPECIFICATION</th>
-                        <th style="width:15%">UNIT PRICE</th>
-                        <th style="width:10%">QTY</th>
-                        <th style="width:20%">TOTAL</th>
-                        <th class="no-pdf" style="width:5%"></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-
-            <div class="totals-area">
-                <div style="display:flex; justify-content: flex-end; gap:30px; font-size:0.9rem;">
-                    <span>SUBTOTAL:</span><span id="subTot">$0.00</span>
-                </div>
-                <div style="display:flex; justify-content: flex-end; gap:30px; margin:8px 0; font-size:0.9rem; color:#64748b;">
-                    <span>VAT (<span id="vRate" contenteditable="true" oninput="renderItems()">10</span>%):</span><span id="vAmt">$0.00</span>
-                </div>
-                <div class="total-large">
-                    <small style="font-size:0.8rem; font-weight:normal; vertical-align:middle;">TOTAL AMOUNT: </small>
-                    <span id="grandTot">$0.00</span>
-                </div>
-            </div>
-        </div>
-        <button class="btn btn-pdf" onclick="generatePDF()">💾 Download Quote PDF</button>
+    <div class="btn-group">
+        <button class="btn" style="background:#059669" onclick="savePDF()">💾 DOWNLOAD PDF</button>
+        <button class="btn" style="background:#ef4444" onclick="location.reload()">Reset</button>
     </div>
 </div>
 
+<div class="preview-area" id="print-area">
+    <div class="page" id="page-1">
+        <div class="header-top">
+            <h1 class="h-left-title">Quotation</h1>
+            <div class="comp-info-text" contenteditable="true">
+                <strong>YOUR COMPANY NAME</strong><br>Address, Contact Info
+            </div>
+        </div>
+
+        <div class="header-grid">
+            <div class="h-left">
+                <div class="h-row"><span class="h-label">Customer:</span><span class="h-val editable-cell" contenteditable="true"></span></div>
+                <div class="h-row"><span class="h-label">Project:</span><span class="h-val editable-cell" contenteditable="true"></span></div>
+                <div class="h-row"><span class="h-label">Address:</span><span class="h-val editable-cell" contenteditable="true"></span></div>
+            </div>
+            <div class="h-right" style="border-left: 1px solid #eee; padding-left: 15px;">
+                <div class="h-row"><span class="h-label">Quote No:</span><span class="h-val editable-cell" contenteditable="true">QT-2026-001</span></div>
+                <div class="h-row"><span class="h-label">Date:</span><span id="curDate" class="h-val editable-cell" contenteditable="true">10/04/2026</span></div>
+            </div>
+        </div>
+
+        <table id="table-1">
+            <thead>
+                <tr><th class="col-no">NO</th><th>ITEM &amp; SPECIFICATION</th><th class="col-uprice">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr>
+            </thead>
+            <tbody id="tbody-1"></tbody>
+        </table>
+
+        <div id="grandTotalRow" class="total-container">
+            <div class="calc-line"><span>GRAND TOTAL:</span><span id="grandDisplay">$0.00</span></div>
+        </div>
+
+        <div class="pg-num-label" id="pg-label-1">page 1/1</div>
+
+        <div class="footer-fixed" id="final-footer">
+            <div class="terms-box" contenteditable="true"><b>Terms:</b> 50% Deposit, 50% Delivery. Warranty 1 Year.</div>
+            <div class="sig-container">
+                <div><div class="sig-space"></div><div class="sig-line">Accepted By</div></div>
+                <div><div class="sig-space"></div><div class="sig-line">Prepared By</div></div>
+                <div><div class="sig-space"></div><div class="sig-line">Authorized By</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script id="embeddedCSV" type="text/csv">Category,Model,Price,Description,Stock,Lead Time,Remark,,,,,,,,,,,,,,,,,,,,
+,TVs,,,,,,,,,,,,,,,,,,,,,,,,,
+,LS32H5000FKXXT, $142 ,"Samsung TV32"" HD Smart",972,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,UA43U8000FKXXT, $235 ,"Samsung TV43"" Crystal UHD 4K Smart",356,,,,,,,,,,,,,,,,,,,,,,
+,UA50U8000FKXXT, $295 ,"Samsung TV50"" Crystal UHD 4K Smart",37,,,,,,,,,,,,,,,,,,,,,,
+,UA55U8000FKXXT, $340 ,"Samsung TV55"" Crystal UHD 4K Smart",802,,,,,,,,,,,,,,,,,,,,,,
+,UA65U8000FKXXT, $470 ,"Samsung TV65"" Crystal UHD 4K Smart",192,,,,,,,,,,,,,,,,,,,,,,
+,UA75U8000FKXXT, $710 ,"Samsung TV75"" Crystal UHD 4K Smart",107,,,,,,,,,,,,,,,,,,,,,,
+,UA85U8000FKXXT, $990 ,"Samsung TV85"" Crystal UHD 4K Smart",36,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,QA43Q7F4AKXXT, $255 ,"Samsung TV43"" Q7F 4K QLED Vision AI Smart",0,,,,,,,,,,,,,,,,,,,,,,
+,QA50Q7F4AKXXT, $345 ,"Samsung TV50"" Q7F 4K QLED Vision AI Smart",50,,,,,,,,,,,,,,,,,,,,,,
+,QA55Q7F4AKXXT, $375 ,"Samsung TV55"" Q7F 4K QLED Vision AI Smart",107,,,,,,,,,,,,,,,,,,,,,,
+,QA65Q7F4AKXXT, $580 ,"Samsung TV65"" Q7F 4K QLED Vision AI Smart",25,,,,,,,,,,,,,,,,,,,,,,
+,QA75Q7F4AKXXT, $875 ,"Samsung TV75"" Q7F 4K QLED Vision AI Smart",18,,,,,,,,,,,,,,,,,,,,,,
+,QA85Q7F4AKXXT," $1,250 ","Samsung TV85"" Q7F 4K QLED Vision AI Smart",58,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,QA55Q8F5AKXXT, $485 ,"Samsung TV55"" QLED Q8F 4K Vision AI Smart",59,,,,,,,,,,,,,,,,,,,,,,
+,QA65Q8F5AKXXT, $655 ,"Samsung TV65"" QLED Q8F 4K Vision AI Smart",107,,,,,,,,,,,,,,,,,,,,,,
+,QA75Q8F5AKXXT, $965 ,"Samsung TV75"" QLED Q8F 4K Vision AI Smart",0,,,,,,,,,,,,,,,,,,,,,,
+,QA85Q8F5AKXXT," $1,520 ","Samsung TV85"" QLED Q8F 4K Vision AI Smart",26,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,QA50QN90FAKXXT," $1,050 ","Samsung TV50"" Neo QLED QN90 4k Smart",0,,,,,,,,,,,,,,,,,,,,,,
+,QA100QN80FKXXT," $2,320 ","Samsung TV75"" Neo QLED QN90 4k Smart",3,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,QA85QN90FAKXXT," $2,780 ","Samsung TV85"" Neo QLED QN90 4k Smart",9,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,QA98QN90FAKXXT," $6,566 ","Samsung TV98"" Neo QLED QN90 4k Smart",0,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,UA98DU9000KXXT," $3,570 ","Samsung TV 98"" Crystal UHD 4K Tizen OS Smart",13,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,QA100QN80FKXXT," $4,350 ","Samsung TV100"" Neo QLED QN80F 4K Vision AI Smart",7,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,QA55S90FAKXXT," $1,350 ","Samsung TV55"" S90F OLED 4K Smart AI",0,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,QA65S90FAKXXT," $1,975 ","Samsung TV65"" S90F OLED 4K Smart AI",0,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,QA77S90FAKXXT," $2,600 ","Samsung TV77"" S90F OLED 4K Smart AI",0,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,QA83S90FAKXXT," $3,850 ","Samsung TV83"" S90F OLED 4K Smart AI",0,,Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,QA43LS03FAKXXT, $660 ,"Samsung The Frame TV 43""",0,,Free Frame ,,,,,,,,,,,,,,,,,,,,
+,QA55LS03FAKXXT, $870 ,"Samsung The Frame TV 55""",1,,Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
+,QA65LS03FAKXXT," $1,150 ","Samsung The Frame TV 65""",0,,Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
+,QA75LS03FAKXXT," $1,850 ","Samsung The Frame TV 75""",0,,Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
+,QA85LS03FAKXXT," $2,450 ","Samsung The Frame TV 85""",0,,Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,QA65QN900FKXXT," $2,730 ","Samsung TV65"" Neo QLED 8K Vision AI Smart",0,,Free Sound bar HW-Q800F/XT + WMN-B50EB/XY,,,,,,,,,,,,,,,,,,,,
+,QA75QN900FKXXT," $3,880 ","Samsung TV75"" Neo QLED 8K Vision AI Smart",0,,Free Sound bar HW-Q800F/XT + WMN-B50EB/XY,,,,,,,,,,,,,,,,,,,,
+,QA85QN900FKXXT," $5,070 ","Samsung TV85"" Neo QLED 8K Vision AI Smart",0,,Free Sound bar HW-Q800F/XT + WMN-B50EB/XY,,,,,,,,,,,,,,,,,,,,
+,Signage ,,,,,,,,,,,,,,,,,,,,,,,,,
+,LH43BEFHVGKXXT, $220 ,"Samsung Signage 43"" 16H",0,,,,,,,,,,,,,,,,,,,,,,
+,Monitor,,,,,,,,,,,,,,,,,,,,,,,,,
+,WORKING Monitor,,,,,,,,,,,,,,,,,,,,,,,,,
+,LS24F320GAEXXT, $78 ,"Samsung Monitor 24"" Flat, IPS Panel, FHD 120Hz, Black",589,,,,,,,,,,,,,,,,,,,,,,
+,LS27F320GAEXXT, $88 ,"Samsung Monitor 27"" Flat, IPS Panel, FHD 120Hz, Black",289,,,,,,,,,,,,,,,,,,,,,,
+,GAMING Monitor,,,,,,,,,,,,,,,,,,,,,,,,,
+,LS32BM500EEXXT, $440 ,"Samsung Monitor 32"" Flat Monitor with Smart TV Experience",1,,,,,,,,,,,,,,,,,,,,,,
+,LS24DG302EEXXT, $95 ,"Samsung Monitor 24"" Odyssey G3 G30D FHD 180Hz Gaming",108,,,,,,,,,,,,,,,,,,,,,,
+,LS27DG302EEXXT, $150 ,"Samsung Monitor 27"" Odyssey G3 G30D FHD 180Hz Gaming",1,,,,,,,,,,,,,,,,,,,,,,
+,LS27CG552EEXXT, $160 ,"Samsung Monitor 27"" Odyssey G5 QHD 165Hz Gaming Black",46,,,,,,,,,,,,,,,,,,,,,,
+,LS32CG552EEXXT, $185 ,"Samsung Monitor 32"" Odyssey G5 QHD 165Hz Gaming Black",41,,,,,,,,,,,,,,,,,,,,,,
+,LS27FG530EEXXT, $160 ,"Sansung Monitor 27"" Odyssey G5 G53F QHD 200Hz Gaming",110,,,,,,,,,,,,,,,,,,,,,,
+,LS49CG954EEXXT, $830 ,"Samsung Monitor 49"" Odyssey G9 G95C OLED DQHD 240Hz Gaming",1,,,,,,,,,,,,,,,,,,,,,,
+,LS57CG952NEXXT," $1,950 ","Samsung Monitor 57"" Odyssey Neo G9 240Hz Gaming",0,,,,,,,,,,,,,,,,,,,,,,
+,LS49DG910SEXXT," $1,150 ","Samsung Monitor 49"" Odyssey OLED G9 G91SD DQHD 144Hz Gaming",21,,,,,,,,,,,,,,,,,,,,,,
+,LS49DG930SEXXT," $1,300 ","Samsung Monitor 49"" Odyssey OLED G9 G93SD DQHD 240Hz Gaming",29,,,,,,,,,,,,,,,,,,,,,,
+,SMART GAMING Monitor,,,,,,,,,,,,,,,,,,,,,,,,,
+,LS27FG502SEXXT, $420 ,"Samsung Monitor 27"" Odyssey OLED G5 G50D QHD 180Hz Gaming",40,,,,,,,,,,,,,,,,,,,,,,
+,LS27FG900XEXXT," $1,550 ","Samsung Monitor 27"" Odyssey 3D G90XF 4K 165Hz Gaming",5,,,,,,,,,,,,,,,,,,,,,,
+,LS32DG702EEXXT, $460 ,"Samsung Monitor 32"" Odyssey G70B G7 144Hz UHD 4K Gaming",26,,,,,,,,,,,,,,,,,,,,,,
+,LS32DG802SEXXT, $920 ,"Samsung Monitor 32"" Odyssey OLED G8 G80SD 240Hz Gaming",17,,,,,,,,,,,,,,,,,,,,,,
+,LS32FG812SEXXT," $1,100 ","Samsung Monitor 32"" Odyssey OLED G8 G81SF 4K 240Hz Gaming",5,,,,,,,,,,,,,,,,,,,,,,
+,LS34DG850SEXXT, $990 ,"Samsung Monitor 34"" Odyssey G8 G85SD UWQHD 175Hz Gaming",16,,,,,,,,,,,,,,,,,,,,,,
+,LS43CG700NEXXT, $569 ,"Samsung Monitor 43"" Odyssey Neo G7 144Hz Gaming",5,,,,,,,,,,,,,,,,,,,,,,
+,LS49CG954SEXXT," $1,370 ","Samsung Monitor 49"" Odyssey OLED G9 240Hz Gaming",4,,,,,,,,,,,,,,,,,,,,,,
+,HRM Monitor,,,,,,,,,,,,,,,,,,,,,,,,,
+,LS27D804UAEXXT, $270 ,"Samsung Monitor 27"" Viewfinity S8 S80UD UHD 4K 60Hz",31,,,,,,,,,,,,,,,,,,,,,,
+,LS32D800UBEXXT, $385 ,"Samsung Monitor 32"" ViewFinity S8 S80UD UHD 4K  60Hz",14,,,,,,,,,,,,,,,,,,,,,,
+,LS27C900PAEXXT, $900 ,"Samsung Monitor 27"" ViewFinity S9 High Resolution 5K 60Hz",2,,,,,,,,,,,,,,,,,,,,,,
+,LS34C500GAEXXT, $325 ,"Samsung Monitor 34"" ViewFinity S5 C500 WQHD 100Hz",1,,,,,,,,,,,,,,,,,,,,,,
+,SMART Monitor,,,,,,,,,,,,,,,,,,,,,,,,,
+,LS32FM701UEXXT, $320 ,"Samsung Monitro 32"" Flat AI Version Smart TV, Smart Thing 4K 60Hz",10,,,,,,,,,,,,,,,,,,,,,,
+,LS32FM803UEXXT, $550 ,"Samsung Monitor 32"" Flat AI Version 4K 60Hz",10,,,,,,,,,,,,,,,,,,,,,,
+,Refrigerator,,,,,,,,,,,,,,,,,,,,,,,,,
+,RT20HAR1DSA/ST, $205 ,Samsung Refrigerator 2Door 1.46M 208L,6369,,,,,,,,,,,,,,,,,,,,,,
+,RT22FARBDS8/UN, $225 ,Samsung Refrigerator 2Door 1.55M 234L,3169,,,,,,,,,,,,,,,,,,,,,,
+,RT25FARBDS8/UN, $275 ,Samsung Refrigerator 2Door 256L 1.64M,583,,,,,,,,,,,,,,,,,,,,,,
+,RT31CG5021S9UN, $325 ,Samsung Refrigerator  2Door 172M 305L Silver,65,,,,,,,,,,,,,,,,,,,,,,
+,RT35CG5021S9UN, $360 ,Samsung Refrigerator 2Door 1.72M 348L Silver,57,,,,,,,,,,,,,,,,,,,,,,
+,RT38CG6020S9ST, $405 ,Samsung Refrigerator 2Door 1.72M 393L Silver,44,,,,,,,,,,,,,,,,,,,,,,
+,RT38CG6684B1ST, $460 ,Samsung Refrigerator 2Door 1.72M 385L Auto ice Maker Black,204,,,,,,,,,,,,,,,,,,,,,,
+,RT42CB6644C2ST, $475 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke Chocolate,36,,,,,,,,,,,,,,,,,,,,,,
+,RT42CG6644S9ST , $475 ,Samsung Refrigerator 2Door 1.79M 415L Silver,0,,,,,,,,,,,,,,,,,,,,,,
+,RT42CB664412ST, $495 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke White,5,,,,,,,,,,,,,,,,,,,,,,
+,RT42CB664422ST, $495 ,Samsung Refrigerator 2Door 1.79M 415L Black,16,,,,,,,,,,,,,,,,,,,,,,
+,RT42CB66448AST, $495 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke White Blue,0,,,,,,,,,,,,,,,,,,,,,,
+,RT42CB66448CST, $495 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke White Pink,0,,,,,,,,,,,,,,,,,,,,,,
+,RT47CB668422ST, $610 ,Samsung Refrigerator 2Door Bespoke Auto ice Black 1.83M 460L,46,,,,,,,,,,,,,,,,,,,,,,
+,RT47CG6644S9ST, $545 ,Samsung Refrigerator 2Door 1.83M 465L Silver,24,,,,,,,,,,,,,,,,,,,,,,
+,RT53DG7A14S9ST, $655 ,Samsung Refrigerator 2Door 1.86M 530L Twin Cooling Silver,22,,,,,,,,,,,,,,,,,,,,,,
+,RT62K7350BS/ST, $785 ,Samsung Refrigerator 2Door ចុចទឹក 1.87M 553L,1,,,,,,,,,,,,,,,,,,,,,,
+,RS62R50012C/ST , $900 ,Samsung Refrigerator Side by Side 1.79M 655L,3,,,,,,,,,,,,,,,,,,,,,,
+,RS62R5001B4/ST, $875 ,Samsung Refrigerator Side by Side 2Door 1.80M 670.5L,4,,,,,,,,,,,,,,,,,,,,,,
+,RS57DG4000M9ST, $715 ,Samsung Refrigerator Side By Side 2Door 1.78M 583L Silver,101,,,,,,,,,,,,,,,,,,,,,,
+,RS57DG4100B4ST, $765 ,Samsung Refrigerator Side by Side 2Door ចុចទឹក 179M 578L Black,23,,,,,,,,,,,,,,,,,,,,,,
+,RS70F65Q2FST, $780 ,Samsung Refrigerator Side By Side 2Door SpaceMax™ Technology 179M 655L Black,8,,,,,,,,,,,,,,,,,,,,,,
+,RS70F65Q1BST, $930 ,Samsung Refrigerator Side by Side 2Door SpaceMax Technology 179M 655L Black,0,,,,,,,,,,,,,,,,,,,,,,
+,RS70F65K1BST," $1,055 ",Samsung Refrigerator Side By Side 2Door ចុចទឹក & Auto ice 179M 635L Black,27,,,,,,,,,,,,,,,,,,,,,,
+,RS80F65G1FST," $1,355 ",Samsung Refrigerator Side Bye Side 3Door ចុចទឹក & Auto ice 179M 627L Black,37,,,,,,,,,,,,,,,,,,,,,,
+,RS90F65D2FST," $1,420 ",Samsung Refrigerator Side by Side 2Door ចុចទឹក&Auto ice  LCD AI 9inche 179M 615L Black,19,,,,,,,,,,,,,,,,,,,,,,
+,RS90F65A2FST," $2,000 ",Samsung Refrigerator Side Bye Side 2Door ​Family Hub LED ចុចទឹក & Auto ice 179M 615L Black,42,,,,,,,,,,,,,,,,,,,,,,
+,RF48A4000M9/ST, $750 ,Samsung Refrigerator 4Door Twin Cooling Plus 1.80M 488L Silver,25,,,,,,,,,,,,,,,,,,,,,,
+,RF48A4010B4/ST, $785 ,Samsung Refrigerator 4Door Twin Cooling Plus 1.80M 488L Black,13,,,,,,,,,,,,,,,,,,,,,,
+,Washing Machine,,,,,,,,,,,,,,,,,,,,,,,,,
+,WA75H4000SG/ST , $150 ,Samsung Washing Machine 7.5KG Top Load,978,,,,,,,,,,,,,,,,,,,,,,
+,WA10CG4545BYST, $215 ,Samsung Washing Machine 10KG Inverter Top Load Gray,244,,,,,,,,,,,,,,,,,,,,,,
+,WA12CG5441BYST, $235 ,Samsung Washing Machine 12KG Inverter Top Load Gray,1630,,,,,,,,,,,,,,,,,,,,,,
+,WA70F13E4LST, $250 ,Samsung Washing Machine 13KG Ecobubble Top Load Gray,976,,,,,,,,,,,,,,,,,,,,,,
+,WA70F15E4CST, $323 ,Samsung Washing Machine 15KG Ecobubble Top Laod Black,227,,,,,,,,,,,,,,,,,,,,,,
+,WA80F17S8BST, $360 ,Samsung Washing Machine 17KG Bespoke AI Wash Top Load Black,53,,,,,,,,,,,,,,,,,,,,,,
+,WA80F19S8BST , $420 ,Samsung Washing Machine 19KG Bespoke AI & AI Wash Top Load Black,34,,,,,,,,,,,,,,,,,,,,,,
+,WA80F21S8BST, $470 ,Samsung Washing Machine 21KG Bespoke AI Top Load Black,52,,,,,,,,,,,,,,,,,,,,,,
+,WA25B8377GV/ST, $545 ,Samsung Washing Machine 25KG BubbleStorm Top Load Black,20,,,,,,,,,,,,,,,,,,,,,,
+,WT13B5040BA/ST, $185 ,Samsung Washing Machine ធុងភ្លោះ 13KG Top Load,179,,,,,,,,,,,,,,,,,,,,,,
+,WT14B5040BA/ST, $200 ,Samsung Washing Machine ធុងភ្លោះ 14KG Top Load Black,105,,,,,,,,,,,,,,,,,,,,,,
+,WT16B5240BA/ST, $215 ,Samsung Washing Machine ធុងភ្លោះ 16KG Top Load Black,241,,,,,,,,,,,,,,,,,,,,,,
+,WW80FG3M05TWST, $300 ,Samsung Washing Machine 8KG Hygiene Steam Front Load White,158,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WW90FG3M05TWST, $335 ,Samsung Washing Machine 9KG Front Laod White,163,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WW10DB7U94GBST, $480 ,Samsung Washing Machine 10KG AI Energy and AI Wash Front Load Black,26,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WW10DG5U34AEST, $440 ,Samsung Washing Machine 10KG AI Energy and AI Ecobubble Front Load White,15,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WW12CGP44DSBST, $510 ,Samsung Washing Machine 12KG AI EcoBubbleᵀᴹ+ Front Load Balck,143,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WW13T504DAB/ST, $550 ,Samsung Washing Machine 13KG EcoBubble™ & AI Energy Mode Front Load Black,56,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WW13BB944DGHST, $585 ,Samsung Washing Machine 13KG Bespoke AI™ AI Wash Front Laod White,45,,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
+,WF16T6500GV/ST, $635 ,Samsung Washing Machine 16KG Eco Bubble Front Load,94,,,,,,,,,,,,,,,,,,,,,,
+,WF90F25ADSST, $865 ,Samsung Washing Machine 25KG Bespoke AI front-loading with AI Home,12,,,,,,,,,,,,,,,,,,,,,,
+,Wash & Dry ,,,,,,,,,,,,,,,,,,,,,,,,,
+,WD12DG6B85BBST, $710 ,Samsung Wash 12KG Dry 7KG AI EcoBubbleᵀᴹ+ Front Load Black,9,,,,,,,,,,,,,,,,,,,,,,
+,WD16T6500GV/ST, $765 ,Samsung Wash 16KG/Dry 10KG Front Load Black,49,,,,,,,,,,,,,,,,,,,,,,
+,WD90F21BCSST, $920 ,Samsung Wash 21KG & Dryer 11KG Front Load,66,,,,,,,,,,,,,,,,,,,,,,
+,WD25DB8995BZST," $2,050 ",Samsung Wash 25KG & Dryer 15KG Front Load (Premium),12,,,,,,,,,,,,,,,,,,,,,,
+,Dryer,,,,,,,,,,,,,,,,,,,,,,,,,
+,DV10BB9440GHST, $720 ,Samsung ម៉ាស៊ីនសម្ងួត 10KG Front Load White,6,,,,,,,,,,,,,,,,,,,,,,
+,DV90F17CDSST, $935 ,Samsung Dryer Bespoke AI Hybrid Heat Pump 17KG,16,,,,,,,,,,,,,,,,,,,,,,
+,Air Dresser ម៉ាស៊ីនចំហុយខោអាវ,,,,,,,,,,,,,,,,,,,,,,,,,
+,DF24CB9900CRST," $1,665 ",Samsung AirDresser Dual AirWash and Dual JetSteam Cystal Mirror,0,,,,,,,,,,,,,,,,,,,,,,
+,Microwave,,,,,,,,,,,,,,,,,,,,,,,,,
+,MS20A3010AL/ST, $65 ,Samsung Microwave oven 20L Glass Black,33,,,,,,,,,,,,,,,,,,,,,,
+,MS23K3513AW/ST, $77 ,Samsung Microwave Oven Warming Food 23L,5,,,,,,,,,,,,,,,,,,,,,,
+,MS30T5018UK/ST, $119 ,Samsung Microwave oven Food Warmer 30L Black,56,,,,,,,,,,,,,,,,,,,,,,
+,MG23K3515AK/ST, $88 ,Samsung  Microwave Warm & Grill 23L 1250W,44,,,,,,,,,,,,,,,,,,,,,,
+,MG23K3575AS/ST, $99 ,Samsung Microwave Oven Warm & Grill 23L,0,,,,,,,,,,,,,,,,,,,,,,
+,MG23T5018CY/ST, $145 ,Samsung Microwave Grill Fry 23L Sky Blue,1,,,,,,,,,,,,,,,,,,,,,,
+,MG23T5018CC/ST, $115 ,Samsung Microwave Grill Fry 23L Black,0,,,,,,,,,,,,,,,,,,,,,,
+,MG30T5018CK/ST, $137 ,"Samsung Microwave Oven Food Warmer ,Gril, Fryl 30L",1,,,,,,,,,,,,,,,,,,,,,,
+,MC32DB7746KEST, $360 ,Samsung Microwave 32L 1400W Smart Convection Clean White,0,,,,,,,,,,,,,,,,,,,,,,
+,Soundbar,,,,,,,,,,,,,,,,,,,,,,,,,
+,HW-Q990F/XT, $611 ,Samsung Soundbar 11.1.4 ch Subwoofer & Rear Speaker,36,,,,,,,,,,,,,,,,,,,,,,
+,HW-Q930F/XT, $491 ,Samsung Soundbar Q930F Q-Series Wireless Dolby Atmos 9.1.4ch,8,,,,,,,,,,,,,,,,,,,,,,
+,HW-Q800F/XT, $376 ,Samsung Soundbar Q-series 5.1.2 ch Subwoofer Black,21,,,,,,,,,,,,,,,,,,,,,,
+,HW-S800B/XT, $287 ,Samsung Soundbar Ultra Slim 28W Black,0,,,,,,,,,,,,,,,,,,,,,,
+,Sound Tower,,,,,,,,,,,,,,,,,,,,,,,,,
+,MX-T50/XT, $175 ,Samsung Sound Tower High Power Audio 500W,0,,,,,,,,,,,,,,,,,,,,,,
+,MX-T70/XT, $280 ,Samsung Sound Tower High Power Audio 1500W,0,,,,,,,,,,,,,,,,,,,,,,
+,MX-ST90B/XT, $685 ,Samsung Sound Tower 1700W,4,,,,,,,,,,,,,,,,,,,,,,
+,MX-ST50B/XT, $265 ,Samsung  Sound Tower 240W,5,,,,,,,,,,,,,,,,,,,,,,
+,MX-ST40B/XT, $190 ,Samsung Sound Tower 160W,0,,,,,,,,,,,,,,,,,,,,,,
+,Air Purfier,,,,,,,,,,,,,,,,,,,,,,,,,
+,AX32BG3100GBST, $168 ,Samsung Air Purfier Wifi 41W 32 ㎡,118,,,,,,,,,,,,,,,,,,,,,,
+,AX46BG5000GSST, $245 ,Samsung Air Purifier 60 ㎡ 60W,35,,,,,,,,,,,,,,,,,,,,,,
+,AX53A9370GE/ST, $479 ,Samsung Air Purifier Bespoke Cube 53 m2,0,,,,,,,,,,,,,,,,,,,,,,
+,Vuccum,,,,,,,,,,,,,,,,,,,,,,,,,
+,VCC4320S3A/XST, $49 ,Samsung Vuccum Twin Chamber 1600W Blue,0,,,,,,,,,,,,,,,,,,,,,,
+,VCC4540S36/XST, $62 ,Samsung Vuccum 1.3L 1800W,1,,,,,,,,,,,,,,,,,,,,,,
+,VC20M2510WB/ST, $70 ,Samsung Vuccum 2.5L 2000W,1,,,,,,,,,,,,,,,,,,,,,,
+,VC18M21M0VN/ST, $80 ,Samsung Vuccum 1.5L 1800W,0,,,,,,,,,,,,,,,,,,,,,,
+,VC18M3110VB/ST, $75 ,Samsung Vuccum 2L 1800W,0,,,,,,,,,,,,,,,,,,,,,,
+,VS60K6050KW/ST, $173 ,Samsung Vuccum ប្រើថ្ម  0.75L 170W White,0,,,,,,,,,,,,,,,,,,,,,,
+,VS15A6032R7/ST, $225 ,"Samsung Vuccum Jet 60 Turbo (410W,0.8L.Rose Gold)",0,,,,,,,,,,,,,,,,,,,,,,
+,VS15A6031R1/ST, $223 ,Samsung Vuccum Jet 60 turbo 0.8L,0,,,,,,,,,,,,,,,,,,,,,,
+,VS20C852FTB/ST, $410 ,Samsung Vuccum Jet 85 Premium 210W HexaJet Motor Midnight Blue,0,,,,,,,,,,,,,,,,,,,,,,
+,VS20B75AER1/ST, $292 ,Samsung SS Vuccum Cleaner Jet 75E Digital Inverter 0.8L 550W,0,,,,,,,,,,,,,,,,,,,,,,
+,VR05R5050WK/ST, $230 ,Samsung Vuccum Robotic 0.2L 55 W,0,,,,,,,,,,,,,,,,,,,,,,
+,VR50T95735W/ST, $860 ,Samsung Vuccum Robotic Cleaner Jet Bo + Jet AI 30W 0.2L,0,,,,,,,,,,,,,,,,,,,,,,
+,Air Conditioner,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR09BGHQASINSE, $225 ,Samsung Air Conditioner 1HP Non-Inverter,1673,,,,,,,,,,,,,,,,,,,,,,
+,AR12BGHQASINSE, $265 ,Samsung Air Conditioner 1.5HP Non-Inverter,315,,,,,,,,,,,,,,,,,,,,,,
+,AR18BGHQASINSE, $355 ,Samsung Air Conditioner 2HP Non-Inverter,992,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR10DYHZBWKNST, $275 ,Samsung Air Conditioner 1HP S-Inverter Eco Plus,4,,,,,,,,,,,,,,,,,,,,,,
+,AR13DYHZBWKNST, $315 ,Samsung Air Conditioner 1.5HP S-Inverter Eco Plus,2,,,,,,,,,,,,,,,,,,,,,,
+,AR18DYHZBWKNST, $425 ,Samsung Air Conditioner 2HP S-Inverter Eco Plus,10,,,,,,,,,,,,,,,,,,,,,,
+,AR24DYHZBWKNST, $525 ,Samsung Air Conditioner 2.5HP S-Inverter Eco Plus,29,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR10CYHCAWKNST, $325 ,Samsung Air Conditioner Windfree 1HP Inverter R32,52,,,,,,,,,,,,,,,,,,,,,,
+,AR13CYHCAWKNST, $350 ,Samsung Air Conditioner Windfree 1.5HP Inverter R32,39,,,,,,,,,,,,,,,,,,,,,,
+,AR18CYHCAWKNST, $435 ,Samsung Air Conditioner Windfree 2HP Inverter R32,89,,,,,,,,,,,,,,,,,,,,,,
+,AR24CYHCAWKNST, $545 ,Samsung Air Conditioner Windfree 2.5HP Inverter R32,0,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR60H09D1DWNST, $320 ,Samsung Air Conditioner 1HP BESPOKE AI WINDFREE PLUS WIFI,30,,,,,,,,,,,,,,,,,,,,,,
+,AR60H12D1DWNST, $350 ,Samsung Air Conditioner 1.5HP BESPOKE AI WINDFREE PLUS WIFI,30,,,,,,,,,,,,,,,,,,,,,,
+,AR60H18D1DWNST, $450 ,Samsung Air Conditioner 2HP BESPOKE AI WINDFREE PLUS WIFI,5,,,,,,,,,,,,,,,,,,,,,,
+,AR60H24D1DWNST, $550 ,Samsung Air Conditioner 2.5HP BESPOKE AI WINDFREE PLUS WIFI,0,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR60F09D1CWNAF, $380 ,Samsung Air Conditioner Bespoke AI Windfree 1HP Inverter Wifi ស្លាបរេ4ទិស,0,,,,,,,,,,,,,,,,,,,,,,
+,AR60F12D1CWNAF, $410 ,Samsung Air Conditioner Bespoke AI Windfree 1.5HP Inverter Wifi ស្លាបរេ4ទិស,0,,,,,,,,,,,,,,,,,,,,,,
+,AR60F24D1CWNAF, $555 ,Samsung Air Conditioner Bespoke AI Windfree 2.5HP Inverter Wifi ស្លាបរេ4ទិស,0,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR40F09D0AMNSE, $259 ,Samsung Air Conditioner 1HP Neo Alpha Inverter,1800,,,,,,,,,,,,,,,,,,,,,,
+,AR40F12D0AMNSE, $299 ,Samsung Air Conditioner 1.5HP Neo Alpha Inverter,1525,,,,,,,,,,,,,,,,,,,,,,
+,AR40F18D0AMNSE, $399 ,Samsung Air Conditioner 2HP Neo Alpha Inverter,440,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR50H24D1CHNST, $515 ,Samsung Air Conditioner 2.5HP AI Inverter,80,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,AR70H09D1DWNST, $575 ,Samsung Air Conditioner 1HP AI Windfree Plus,0,,,,,,,,,,,,,,,,,,,,,,
+,AR70H12D1DWNST, $615 ,Samsung Air Conditioner 1.5HP AI Windfree Plus,0,,,,,,,,,,,,,,,,,,,,,,
+,AR70H18D1DWNST, $705 ,Samsung Air Conditioner 2HP AI Windfree Plus,0,,,,,,,,,,,,,,,,,,,,,,
+,AR70H24D1DWNST, $785 ,Samsung Air Conditioner 2.5HP AI Windfree Plus,0,,,,,,,,,,,,,,,,,,,,,,
+,Cassette R410A,,,,,,,,,,,,,,,,,,,,,,,,,
+,1Way,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC035TN1DKC/TS, $615 ,Samsung 1 Way Cassette WindFree 1.5HP Inverter,29,,,,,,,,,,,,,,,,,,,,,,
+,AC052TN1DKC/TS, $775 ,Samsung 1 Way Cassette WindFree 2HP Inverter,22,,,,,,,,,,,,,,,,,,,,,,
+,AC071TN1DKC/TS, $905 ,Samsung 1 Way Cassette WindFree 2.5HP Inverter,34,,,,,,,,,,,,,,,,,,,,,,
+,4Ways,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC052TN4DKC/TS, $780 ,Samsung 4 Ways Cassette Wind-Free 2HP Inverter,43,,,,,,,,,,,,,,,,,,,,,,
+,AC071TN4DKC/TS, $895 ,Samsung 4 Ways Cassette Wind-Free 2.5HP Inverter,23,,,,,,,,,,,,,,,,,,,,,,
+,AC100TN4DKC/TS," $1,160 ",Samsung 4 Ways Cassette Wind-Free 3.5HP Inverter,15,,,,,,,,,,,,,,,,,,,,,,
+,AC120TN4DKC/TS," $1,315 ",Samsung 4 Ways Cassette Wind-Free 4HP Inverter,6,,,,,,,,,,,,,,,,,,,,,,
+,AC140TN4DKC/TS," $1,335 ",Samsung 4 Ways Cassette Wind-Free 5HP Inverter,4,,,,,,,,,,,,,,,,,,,,,,
+,AC120TN4DKC/TS /AC120TXADNC/TS," $1,345 ","Samsung 4 Ways Cassette Wind-Free 4HP Inverter, (3Phase)",5,,,,,,,,,,,,,,,,,,,,,,
+,AC140TN4DKC/TS /AC140TXADNC/TS," $1,365 ","Samsung 4 Ways Cassette Wind-Free 5HP Inverter, (3Phase)",21,,,,,,,,,,,,,,,,,,,,,,
+,360,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC052TN4PKC/TS, $840 ,Samsung Casstte 360 2HP Invertert,53,,,,,,,,,,,,,,,,,,,,,,
+,AC071TN4PKC/TS, $960 ,Samsung Casstte 360 2.5HP Invertert,51,,,,,,,,,,,,,,,,,,,,,,
+,AC100TN4PKC/TS," $1,225 ",Samsung Casstte 360 3.5HP Invertert,19,,,,,,,,,,,,,,,,,,,,,,
+,AC120TN4PKC/TS," $1,395 ",Samsung Casstte 360 4HP Invertert,7,,,,,,,,,,,,,,,,,,,,,,
+,AC140TN4PKC/TS," $1,425 ",Samsung Casstte 360 5HP Invertert,10,,,,,,,,,,,,,,,,,,,,,,
+,AC120TN4PKC/TS /AC120TXADNC/TS," $1,425 ","Samsung Casstte 360 4HP Invertert, (3Phase)",5,,,,,,,,,,,,,,,,,,,,,,
+,AC140TN4PKC/TS /AC140TXADNC/TS," $1,455 ","Samsung Casstte 360 5HP Invertert, (3Phase)",21,,,,,,,,,,,,,,,,,,,,,,
+,Concealed Duct,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC035TNLDKC/TS, $535 ,Samsung Concealed Duct 1.5HP Inverter,3,,,,,,,,,,,,,,,,,,,,,,
+,AC052TNLDKC/TS, $715 ,Samsung Concealed Duct 2HP Inverter,11,,,,,,,,,,,,,,,,,,,,,,
+,AC071TNMDKC/TS, $878.00 ,Samsung Concealed Duct 2.5HP Inverter,10,,,,,,,,,,,,,,,,,,,,,,
+,Cassette R32,,,,,,,,,,,,,,,,,,,,,,,,,
+,1way,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC035DN1DKF/TS /AC035DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC052DN1DKF/TS /AC052DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC071DN1DKF/TS /AC071DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,360,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC052DN6DKF/TS /AC052DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC071DN6DKF/TS /AC071DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DN6DKF/TS /AC100DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DN6DKF/TS /AC140DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DN6DKF/TS /AC100DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DN6DKF/TS /AC140DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,4ways,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC052DN4DKF/TS /AC052DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC071DN4DKF/TS /AC071DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DN4DKF/TS /AC100DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DN4DKF/TS /AC140DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DN4DKF/TS /AC100DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DN4DKF/TS /AC140DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC160DN4DKF/TS /AC160DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,,,
+,Concealed Duct,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC035TNLDKC/TS /AC035TXADKC/TS,,Samsung Concealed Duct 1.5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC052TNLDKC/TS /AC052DXADKF/TS,,Samsung Concealed Duct 2HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC071DXADKF/TS /AC071DXADKF/TS,,Samsung Concealed Duct 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DNMDKF/TS /AC100DXADKF/TS,,Samsung Concealed Duct 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DNMDKF/TS /AC140DXADKF/TS,,Samsung Concealed Duct 5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC160TNMDKC/TS/AC160TXADKC/TS,,Samsung Concealed Duct 6HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DNMDKF/TS/AC100DXADNF/TS,,"Samsung Concealed Duct 3.5HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,,,
+,AC140DNMDKF/TS/AC140DXADNF/TS,,"Samsung Concealed Duct 5HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,,,
+,AC160DNMDKF/TS/AAC160DXADNF/TS,,"Samsung Concealed Duct 6HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,,,
+,Under Ceiling,,,,,,,,,,,,,,,,,,,,,,,,,
+,AC052DNCDKF/TS /AC052DXADKF/TS,,Samsung Under Ceilling 2HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC071DNCDKF/TS /AC071DXADKF/TS,,Samsung Under Ceilling 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DNCDKF/TS /AC100DXADKF/TS,,Samsung Under Ceilling 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DNCDKF/TS /AC140DXADKF/TS,,Samsung Under Ceilling 5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC100DNCDKF/TS /AC100DXADNF/TS,,Samsung Under Ceilling 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC140DNCDKF/TS /AC140DXADNF/TS,,Samsung Under Ceilling 5HP Inverter,,,,,,,,,,,,,,,,,,,,,,,
+,AC160DNCDKF/TS /AC160DXADNF/TS,,Samsung Under Ceilling 6HP Inverter,,,,,,,,,,,,,,,,,,,,,,,</script>
+
 <script>
-    let rawData = [];
-    let cart = [];
-    let currentPick = null;
+    let db = []; let pageCount = 1; let cart = [];
 
-    document.getElementById('qDate').innerText = new Date().toLocaleDateString();
-    document.getElementById('qNum').innerText = "#" + Math.floor(1000 + Math.random() * 9000);
+    function initApp() {
+        document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-GB');
+        const raw = document.getElementById('embeddedCSV').textContent.trim();
+        if(raw) parseData(raw);
+    }
 
-    // CSV HANDLER (EXPLICIT MAPPING)
-    document.getElementById('csvIn').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            const rows = reader.result.split('\n').filter(r => r.trim() !== "");
-            rawData = rows.slice(1).map(row => {
-                const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Regex for commas in quotes
-                return {
-                    model: c[1] ? c[1].replace(/"/g, '').trim() : "Unknown",
-                    price: c[2] ? parseFloat(c[2].replace(/[^0-9.]/g, '')) : 0,
-                    desc: c[3] ? c[3].replace(/"/g, '').trim() : "No Description"
-                };
-            }).filter(item => item.model !== "Unknown");
-            alert("Database Ready: " + rawData.length + " items loaded.");
-        };
-        reader.readAsText(e.target.files[0]);
-    });
+    function parseData(text) {
+        const lines = text.split(/\r?\n/);
+        db = lines.slice(1).map(line => {
+            const p = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            return { id: Math.random(), n: p[1]?.replace(/"/g,''), p: parseFloat(p[2]?.replace(/[^0-9.]/g,'')) || 0, d: p[3]?.replace(/"/g,'') || "" };
+        }).filter(i => i.n);
+    }
 
-    // SEARCH (LEFT-TO-RIGHT, 4 CHARS)
     function handleSearch() {
         const val = document.getElementById('mSearch').value.toLowerCase();
-        const resList = document.getElementById('resultsList');
-        
-        if(val.length < 4) { resList.style.display = 'none'; return; }
+        const list = document.getElementById('results');
+        if (val.length < 4 || db.length === 0) { list.style.display = 'none'; return; }
+        const matches = db.filter(i => i.n.toLowerCase().startsWith(val)).slice(0, 10);
+        list.innerHTML = matches.map(m => `
+            <div class="res-item" onclick="pick('${m.id}')">
+                <span class="res-name">${m.n}</span>
+                <span class="res-desc">${m.d}</span>
+                <span class="res-price">$${m.p.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
+            </div>`).join('');
+        list.style.display = 'block';
+    }
 
-        const filtered = rawData.filter(i => i.model.toLowerCase().startsWith(val)).slice(0, 10);
-        
-        if(filtered.length > 0) {
-            resList.style.display = 'block';
-            resList.innerHTML = filtered.map(item => `
-                <div class="result-item" onclick="onPick('${item.model.replace(/'/g, "\\'")}', ${item.price}, '${item.desc.replace(/'/g, "\\'")}')">
-                    <div class="result-row-one">
-                        <span class="res-model">${item.model}</span>
-                        <span class="res-price">$${item.price.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
-                    </div>
-                    <span class="res-desc">${item.desc}</span>
-                </div>
-            `).join('');
-        } else {
-            resList.innerHTML = '<div class="result-item" style="color:#94a3b8">No matching model found</div>';
-            resList.style.display = 'block';
+    function pick(id) {
+        window.activeItem = db.find(i => i.id == id);
+        document.getElementById('selName').innerText = window.activeItem.n;
+        document.getElementById('qtyPanel').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
+    }
+
+    function smartAdd() {
+        const q = parseFloat(document.getElementById('inQty').value) || 1;
+        const item = {...window.activeItem, q, page: pageCount};
+        const pageEl = document.getElementById(`page-${pageCount}`);
+        if (pageEl.querySelector('table').offsetHeight > 700) {
+            pageCount++;
+            const page = document.createElement('div');
+            page.className = 'page'; page.id = `page-${pageCount}`;
+            page.innerHTML = `<div style="font-weight:bold; font-size:9pt; margin-bottom:10px; border-bottom:1px solid #000;">Quotation Continued...</div>
+                <table id="table-${pageCount}"><thead><tr><th class="col-no">NO</th><th>ITEM & SPECIFICATION</th><th class="col-uprice">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr></thead><tbody id="tbody-${pageCount}"></tbody></table>
+                <div class="pg-num-label" id="pg-label-${pageCount}"></div>`;
+            document.getElementById('print-area').appendChild(page);
+            item.page = pageCount;
         }
+        cart.push(item);
+        render();
+        document.getElementById('qtyPanel').style.display = 'none';
+        document.getElementById('mSearch').value = "";
     }
 
-    function onPick(m, p, d) {
-        currentPick = { model: m, price: p, desc: d };
-        document.getElementById('dispModel').innerText = m;
-        document.getElementById('dispDesc').innerText = d;
-        document.getElementById('selectionBox').style.display = 'block';
-        document.getElementById('resultsList').style.display = 'none';
-        document.getElementById('mSearch').value = m;
+    function render() {
+        for(let i=1; i<=pageCount; i++) document.getElementById(`tbody-${i}`).innerHTML = "";
+        let gt = 0;
+        cart.forEach((item, idx) => {
+            const rowT = item.p * item.q; gt += rowT;
+            document.getElementById(`tbody-${item.page}`).innerHTML += `<tr>
+                <td class="col-no"><button class="del-btn" style="color:red; border:none; background:none;" onclick="removeItem(${idx})">×</button>${idx+1}</td>
+                <td><div contenteditable="true" onblur="updateCart(${idx},'n',this.innerText)"><b>${item.n}</b></div><div contenteditable="true" onblur="updateCart(${idx},'d',this.innerText)" style="font-size:9pt; color:#444;">${item.d}</div></td>
+                <td class="col-uprice" contenteditable="true" onblur="updateCart(${idx},'p',this.innerText)">$${item.p.toFixed(2)}</td>
+                <td class="col-qty" contenteditable="true" onblur="updateCart(${idx},'q',this.innerText)">${item.q}</td>
+                <td class="col-total">$${rowT.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`;
+        });
+        document.getElementById('grandDisplay').innerText = "$" + gt.toLocaleString(undefined,{minimumFractionDigits:2});
+        const lp = cart.length > 0 ? cart[cart.length-1].page : 1;
+        document.getElementById(`table-${lp}`).after(document.getElementById('grandTotalRow'));
+        document.getElementById(`page-${pageCount}`).appendChild(document.getElementById('final-footer'));
+        for(let i=1; i<=pageCount; i++) document.getElementById(`pg-label-${i}`).innerText = `page ${i}/${pageCount}`;
     }
 
-    function addItem() {
-        const qty = parseInt(document.getElementById('inQty').value) || 1;
-        cart.push({...currentPick, qty: qty});
-        renderItems();
-        document.getElementById('selectionBox').style.display = 'none';
-        document.getElementById('mSearch').value = '';
+    function updateCart(idx, field, val) {
+        let clean = val.replace(/[$,]/g, "");
+        if (field === 'p' || field === 'q') cart[idx][field] = parseFloat(clean) || 0;
+        else cart[idx][field] = val;
+        render();
     }
 
-    function renderItems() {
-        const tbody = document.querySelector('#quoteTable tbody');
-        tbody.innerHTML = cart.map((it, idx) => `
-            <tr>
-                <td><strong style="color:var(--primary); font-size:1rem;">${it.model}</strong><br>
-                    <div style="color:#64748b; font-size:0.85rem; margin-top:5px; line-height:1.4;">${it.desc}</div>
-                </td>
-                <td>$${it.price.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                <td>${it.qty}</td>
-                <td style="font-weight:bold;">$${(it.price * it.qty).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                <td class="no-pdf"><button onclick="cart.splice(${idx},1);renderItems()" style="color:#ef4444; border:none; background:none; cursor:pointer; font-size:1.2rem;">×</button></td>
-            </tr>
-        `).join('');
+    function removeItem(idx) { cart.splice(idx, 1); render(); }
 
-        const sub = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-        const vatRate = parseFloat(document.getElementById('vRate').innerText) || 0;
-        const vat = sub * (vatRate / 100);
+    function savePDF() {
+        html2pdf().from(document.getElementById('print-area')).set({
+            margin: 0, filename: 'Quotation.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).save();
+    }
+
+    function executePack() {
+        const text = document.getElementById('csvInput').value.trim();
+        if(!text) return alert("Paste your CSV content first.");
         
-        document.getElementById('subTot').innerText = "$" + sub.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('vAmt').innerText = "$" + vat.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('grandTot').innerText = "$" + (sub + vat).toLocaleString(undefined, {minimumFractionDigits: 2});
+        const originalDoc = document.documentElement.cloneNode(true);
+        // Inject the CSV data
+        originalDoc.querySelector('#embeddedCSV').textContent = text;
+        // REMOVE THE PACKER BOX COMPLETELY
+        const packerInNewFile = originalDoc.querySelector('#packerTool');
+        if (packerInNewFile) packerInNewFile.remove();
+        
+        const blob = new Blob(['<!DOCTYPE html>\n' + originalDoc.outerHTML], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "Quotation_App.html";
+        a.click();
     }
-
-    function generatePDF() {
-        const nopdf = document.querySelectorAll('.no-pdf');
-        nopdf.forEach(el => el.style.display = 'none');
-        const element = document.getElementById('quote-pdf');
-        html2pdf().from(element).set({
-            margin: 0, filename: 'Quotation_Final.pdf', html2canvas: { scale: 3 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).save().then(() => nopdf.forEach(el => el.style.display = 'table-cell'));
-    }
-
-    // Close dropdown on click outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container')) document.getElementById('resultsList').style.display = 'none';
-    });
 </script>
-</body>
-</html>
+
+</body></html>
