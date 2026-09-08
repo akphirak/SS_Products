@@ -2,7 +2,7 @@
 <html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>QuoteApp_V67_Clean</title>
+    <title>QuoteApp_V68_CategorySearch</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --primary: #1e40af; --ios-bg: #f2f2f7; --a4-w: 210mm; --a4-h: 297mm; }
@@ -10,12 +10,15 @@
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--ios-bg); margin: 0; padding: 10px; }
         
         .controls { background: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: sticky; top: 10px; z-index: 2000; }
-        .search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        .search-group { display: flex; gap: 10px; margin-bottom: 5px; }
+        .select-input { width: 35%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; outline: none; background: #fff; }
+        .search-input { width: 65%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; outline: none; }
         .results-list { position: absolute; width: calc(100% - 24px); max-height: 280px; overflow-y: auto; background: white; z-index: 2001; border: 1px solid #ddd; display: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .res-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
         .res-item:hover { background: #f0f7ff; }
         .res-name { font-weight: bold; color: var(--primary); display: block; }
         .res-desc { font-size: 11px; color: #666; display: block; margin: 2px 0; }
+        .res-remarks { font-size: 11px; color: #888; font-style: italic; display: block; }
         .res-price { font-weight: bold; color: #059669; font-size: 13px; }
 
         .preview-area { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 50px; }
@@ -70,7 +73,12 @@
 <body onload="initApp()">
 
 <div class="controls">
-    <input type="text" id="mSearch" class="search-input" placeholder="Search (Start typing 4 chars)..." oninput="handleSearch()">
+    <div class="search-group">
+        <select id="mCategory" class="select-input" onchange="handleSearch()">
+            <option value="">All Categories</option>
+        </select>
+        <input type="text" id="mSearch" class="search-input" placeholder="Search Model (4+ chars)..." oninput="handleSearch()">
+    </div>
     <div id="results" class="results-list"></div>
     
     <div id="qtyPanel" style="display:none; margin-top:10px; padding:15px; border:2px solid var(--primary); border-radius:12px; background:#f0f7ff;">
@@ -104,13 +112,13 @@
             </div>
             <div class="h-right" style="border-left: 1px solid #eee; padding-left: 15px;">
                 <div class="h-row"><span class="h-label">Quote No:</span><span class="h-val editable-cell" contenteditable="true">QT-2026-001</span></div>
-                <div class="h-row"><span class="h-label">Date:</span><span id="curDate" class="h-val editable-cell" contenteditable="true">11/05/2026</span></div>
+                <div class="h-row"><span class="h-label">Date:</span><span id="curDate" class="h-val editable-cell" contenteditable="true">07/09/2026</span></div>
             </div>
         </div>
 
         <table id="table-1">
             <thead>
-                <tr><th class="col-no">NO</th><th>ITEM &amp; SPECIFICATION</th><th class="col-uprice">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr>
+                <tr><th class="col-no">NO</th><th>MODEL &amp; SPECIFICATION</th><th class="col-uprice">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr>
             </thead>
             <tbody id="tbody-1"></tbody>
         </table>
@@ -119,7 +127,7 @@
             <div class="calc-line"><span>GRAND TOTAL:</span><span id="grandDisplay">$0.00</span></div>
         </div>
 
-        <div class="pg-num-label" id="pg-label-1">page 1/1</div>
+        <div class="pg-num-label" id="pg-label-1">pages 1/1</div>
 
         <div class="footer-fixed" id="final-footer">
             <div class="terms-box" contenteditable="true"><b>Terms:</b> 50% Deposit, 50% Delivery. Warranty 1 Year.</div>
@@ -134,291 +142,255 @@
 
 
 
-<script id="embeddedCSV" type="text/csv">Category,Model,Price,Description,Remark,,,,,,,,,,,,,,,,,,,,
-,TVs,,,,,,,,,,,,,,,,,,,,,,,
-,LS32H5000FKXXT, $138 ,"Samsung TV32"" HD Smart",,,,,,,,,,,,,,,,,,,,,
-,UA43F6000FKXXT, $213 ,"Samsung TV43"" Full HD Smart TV",,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,UA43U8000FKXXT, $243 ,"Samsung TV43"" Crystal UHD 4K Smart",,,,,,,,,,,,,,,,,,,,,
-,UA50U8000FKXXT, $306 ,"Samsung TV50"" Crystal UHD 4K Smart",,,,,,,,,,,,,,,,,,,,,
-,UA55U8000FKXXT, $352 ,"Samsung TV55"" Crystal UHD 4K Smart",,,,,,,,,,,,,,,,,,,,,
-,UA65U8000FKXXT, $480 ,"Samsung TV65"" Crystal UHD 4K Smart",,,,,,,,,,,,,,,,,,,,,
-,UA75U8000FKXXT, $735 ,"Samsung TV75"" Crystal UHD 4K Smart",,,,,,,,,,,,,,,,,,,,,
-,UA85U8000FKXXT," $1,090 ","Samsung TV85"" Crystal UHD 4K Smart",,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA43Q7F4AKXXT, $264 ,"Samsung TV43"" Q7F 4K QLED Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA50Q7F4AKXXT, $354 ,"Samsung TV50"" Q7F 4K QLED Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA55Q7F4AKXXT, $383 ,"Samsung TV55"" Q7F 4K QLED Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA65Q7F4AKXXT, $597 ,"Samsung TV65"" Q7F 4K QLED Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA75Q7F4AKXXT, $895 ,"Samsung TV75"" Q7F 4K QLED Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA85Q7F4AKXXT," $1,280 ","Samsung TV85"" Q7F 4K QLED Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA55Q8F5AKXXT, $495 ,"Samsung TV55"" QLED Q8F 4K Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA65Q8F5AKXXT, $669 ,"Samsung TV65"" QLED Q8F 4K Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA75Q8F5AKXXT, $975 ,"Samsung TV75"" QLED Q8F 4K Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,QA85Q8F5AKXXT," $1,530 ","Samsung TV85"" QLED Q8F 4K Vision AI Smart",,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA50QN90FAKXXT," $1,101 ","Samsung TV50"" Neo QLED QN90 4k Smart",,,,,,,,,,,,,,,,,,,,,
-,QA75QN90FAKXXT," $2,600 ","Samsung TV75"" Neo QLED QN90 4k Smart",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,QA85QN90FAKXXT," $2,800 ","Samsung TV85"" Neo QLED QN90 4k Smart",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,QA98QN90FAKXXT," $7,100 ","Samsung TV98"" Neo QLED QN90 4k Smart",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,UA98DU9000KXXT," $3,570 ","Samsung TV 98"" Crystal UHD 4K Tizen OS Smart",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,QA100QN80FKXXT," $4,479 ","Samsung TV100"" Neo QLED QN80F 4K Vision AI Smart",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA55S90FAKXXT," $1,480 ","Samsung TV55"" S90F OLED 4K Smart AI",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,QA65S90FAKXXT," $1,855 ","Samsung TV65"" S90F OLED 4K Smart AI",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,QA77S90FAKXXT," $2,640 ","Samsung TV77"" S90F OLED 4K Smart AI",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,QA83S90FAKXXT," $4,075 ","Samsung TV83"" S90F OLED 4K Smart AI",Free Sound bar HW-Q800F/XT,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA43LS03FAKXXT, $689 ,"Samsung The Frame TV 43""",Free Frame ,,,,,,,,,,,,,,,,,,,,
-,QA55LS03FAKXXT, $932 ,"Samsung The Frame TV 55""",Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
-,QA65LS03FAKXXT," $1,204 ","Samsung The Frame TV 65""",Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
-,QA75LS03FAKXXT," $1,984 ","Samsung The Frame TV 75""",Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
-,QA85LS03FAKXXT," $2,605 ","Samsung The Frame TV 85""",Free Sound bar HW-Q800F/XT + Frame,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA43LS01DAKXXT, $667 ,"Samsung TV43"" Serif ",,,,,,,,,,,,,,,,,,,,,
-,QA55LS01DAKXXT," $1,082 ","Samsung TV55"" Serif ",,,,,,,,,,,,,,,,,,,,,
-,QA65LS01DAKXXT," $1,228 ","Samsung TV65"" Serif ",,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA43LS05BBKXXT," $1,029 ","Samsung TV 43"" The Sero",,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,QA85QN900FKXXT," $4,900 ","Samsung TV85"" Neo QLED 8K Vision AI Smart",Free Sound bar HW-Q800F/XT + WMN-B50EB/XY,,,,,,,,,,,,,,,,,,,,
-,Signage ,,,,,,,,,,,,,,,,,,,,,,,
-,LH43BEFHVGKXXT, $225 ,"Samsung Signage 43"" 16H",,,,,,,,,,,,,,,,,,,,,
-,Monitor,,,,,,,,,,,,,,,,,,,,,,,
-,WORKING Monitor,,,,,,,,,,,,,,,,,,,,,,,
-,LS24F320GAEXXT, $78 ,"Samsung Monitor 24"" Flat, IPS Panel, FHD 120Hz, Black",,,,,,,,,,,,,,,,,,,,,
-,LS27F320GAEXXT, $88 ,"Samsung Monitor 27"" Flat, IPS Panel, FHD 120Hz, Black",,,,,,,,,,,,,,,,,,,,,
-,GAMING Monitor,,,,,,,,,,,,,,,,,,,,,,,
-,LS32BM500EEXXT, $440 ,"Samsung Monitor 32"" Flat Monitor with Smart TV Experience",,,,,,,,,,,,,,,,,,,,,
-,LS24DG302EEXXT, $95 ,"Samsung Monitor 24"" Odyssey G3 G30D FHD 180Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS27DG302EEXXT, $150 ,"Samsung Monitor 27"" Odyssey G3 G30D FHD 180Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS27CG552EEXXT, $160 ,"Samsung Monitor 27"" Odyssey G5 QHD 165Hz Gaming Black",,,,,,,,,,,,,,,,,,,,,
-,LS32CG552EEXXT, $185 ,"Samsung Monitor 32"" Odyssey G5 QHD 165Hz Gaming Black",,,,,,,,,,,,,,,,,,,,,
-,LS27FG530EEXXT, $160 ,"Sansung Monitor 27"" Odyssey G5 G53F QHD 200Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS49CG954EEXXT, $830 ,"Samsung Monitor 49"" Odyssey G9 G95C OLED DQHD 240Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS57CG952NEXXT," $1,950 ","Samsung Monitor 57"" Odyssey Neo G9 240Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS49DG910SEXXT," $1,150 ","Samsung Monitor 49"" Odyssey OLED G9 G91SD DQHD 144Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS49DG930SEXXT," $1,300 ","Samsung Monitor 49"" Odyssey OLED G9 G93SD DQHD 240Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,SMART GAMING Monitor,,,,,,,,,,,,,,,,,,,,,,,
-,LS27FG502SEXXT, $420 ,"Samsung Monitor 27"" Odyssey OLED G5 G50D QHD 180Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS27FG900XEXXT," $1,550 ","Samsung Monitor 27"" Odyssey 3D G90XF 4K 165Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS32DG702EEXXT, $460 ,"Samsung Monitor 32"" Odyssey G70B G7 144Hz UHD 4K Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS32DG802SEXXT, $920 ,"Samsung Monitor 32"" Odyssey OLED G8 G80SD 240Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS32FG812SEXXT," $1,100 ","Samsung Monitor 32"" Odyssey OLED G8 G81SF 4K 240Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS34DG850SEXXT, $990 ,"Samsung Monitor 34"" Odyssey G8 G85SD UWQHD 175Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS43CG700NEXXT, $569 ,"Samsung Monitor 43"" Odyssey Neo G7 144Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,LS49CG954SEXXT," $1,370 ","Samsung Monitor 49"" Odyssey OLED G9 240Hz Gaming",,,,,,,,,,,,,,,,,,,,,
-,HRM Monitor,,,,,,,,,,,,,,,,,,,,,,,
-,LS27D804UAEXXT, $270 ,"Samsung Monitor 27"" Viewfinity S8 S80UD UHD 4K 60Hz",,,,,,,,,,,,,,,,,,,,,
-,LS32D800UBEXXT, $385 ,"Samsung Monitor 32"" ViewFinity S8 S80UD UHD 4K  60Hz",,,,,,,,,,,,,,,,,,,,,
-,LS27C900PAEXXT, $900 ,"Samsung Monitor 27"" ViewFinity S9 High Resolution 5K 60Hz",,,,,,,,,,,,,,,,,,,,,
-,LS34C500GAEXXT, $325 ,"Samsung Monitor 34"" ViewFinity S5 C500 WQHD 100Hz",,,,,,,,,,,,,,,,,,,,,
-,SMART Monitor,,,,,,,,,,,,,,,,,,,,,,,
-,LS32FM701UEXXT, $320 ,"Samsung Monitro 32"" Flat AI Version Smart TV, Smart Thing 4K 60Hz",,,,,,,,,,,,,,,,,,,,,
-,LS32FM803UEXXT, $550 ,"Samsung Monitor 32"" Flat AI Version 4K 60Hz",,,,,,,,,,,,,,,,,,,,,
-,Refrigerator,,,,,,,,,,,,,,,,,,,,,,,
-,RT20HAR1DSA/ST, $222 ,Samsung Refrigerator 2Door 1.46M 208L,,,,,,,,,,,,,,,,,,,,,
-,RT22FARBDS8/UN, $245 ,Samsung Refrigerator 2Door 1.55M 234L (Silver),,,,,,,,,,,,,,,,,,,,,
-,RT22FGRADB1/ST, $265 ,Samsung Refrigerator 2Door 1.55M 236L Black (Black),,,,,,,,,,,,,,,,,,,,,
-,RT25FARBDS8/UN, $295 ,Samsung Refrigerator 2Door 256L 1.64M,,,,,,,,,,,,,,,,,,,,,
-,RT31CG5021S9UN, $335 ,Samsung Refrigerator  2Door 172M 305L Silver,,,,,,,,,,,,,,,,,,,,,
-,RT35CG5021S9UN, $375 ,Samsung Refrigerator 2Door 1.72M 348L Silver,,,,,,,,,,,,,,,,,,,,,
-,RT38CG6020S9ST, $410 ,Samsung Refrigerator 2Door 1.72M 393L Silver,,,,,,,,,,,,,,,,,,,,,
-,RT38CG6684B1ST, $475 ,Samsung Refrigerator 2Door 1.72M 385L Auto ice Maker Black,,,,,,,,,,,,,,,,,,,,,
-,RT42CB6644C2ST, $505 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke Chocolate,,,,,,,,,,,,,,,,,,,,,
-,RT42CG6644S9ST , $495 ,Samsung Refrigerator 2Door 1.79M 415L Silver,,,,,,,,,,,,,,,,,,,,,
-,RT42CB664412ST, $525 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke White,,,,,,,,,,,,,,,,,,,,,
-,RT42CB664422ST, $530 ,Samsung Refrigerator 2Door 1.79M 415L Black,,,,,,,,,,,,,,,,,,,,,
-,RT42CB66448CST, $530 ,Samsung Refrigerator 2Door 1.79M 415L Bespoke White Pink,,,,,,,,,,,,,,,,,,,,,
-,RT47CB668422ST, $650 ,Samsung Refrigerator 2Door Bespoke Auto ice Black 1.83M 460L,,,,,,,,,,,,,,,,,,,,,
-,RT47CG6644S9ST, $580 ,Samsung Refrigerator 2Door 1.83M 465L Silver,,,,,,,,,,,,,,,,,,,,,
-,RT53DG7A14S9ST, $710 ,Samsung Refrigerator 2Door 1.86M 530L Twin Cooling Silver,,,,,,,,,,,,,,,,,,,,,
-,RT62K7350BS/ST, $750 ,Samsung Refrigerator 2Door ចុចទឹក 1.87M 553L,,,,,,,,,,,,,,,,,,,,,
-,RT62K7150BS/ST, $795 ,Samsung Refrigerator 2 door Twin Cooling Plus 187M 562L Black,,,,,,,,,,,,,,,,,,,,,
-,RS62R50012C/ST , $810 ,Samsung Refrigerator Side by Side 1.79M 655L,,,,,,,,,,,,,,,,,,,,,
-,RS62R5001B4/ST, $790 ,Samsung Refrigerator Side by Side 2Door 1.80M 670.5L,,,,,,,,,,,,,,,,,,,,,
-,RS57DG4000M9ST, $730 ,Samsung Refrigerator Side By Side 2Door 1.78M 583L Silver,,,,,,,,,,,,,,,,,,,,,
-,RS57DG4100B4ST, $800 ,Samsung Refrigerator Side by Side 2Door ចុចទឹក 179M 578L Black,,,,,,,,,,,,,,,,,,,,,
-,RS70F65Q2FST, $830 ,Samsung Refrigerator Side By Side 2Door SpaceMax™ Technology 179M 655L Black,,,,,,,,,,,,,,,,,,,,,
-,RS70F65Q1BST," $1,035 ",Samsung Refrigerator Side by Side 2Door SpaceMax Technology 179M 655L Black,,,,,,,,,,,,,,,,,,,,,
-,RS70F65K1BST," $1,125 ",Samsung Refrigerator Side By Side 2Door ចុចទឹក & Auto ice 179M 635L Black,,,,,,,,,,,,,,,,,,,,,
-,RS80F65G1FST," $1,580 ",Samsung Refrigerator Side Bye Side 3Door ចុចទឹក & Auto ice 179M 627L Black,,,,,,,,,,,,,,,,,,,,,
-,RS90F65D2FST," $1,700 ",Samsung Refrigerator Side by Side 2Door ចុចទឹក&Auto ice  LCD AI 9inche 179M 615L Black,,,,,,,,,,,,,,,,,,,,,
-,RS90F65A2FST," $1,990 ",Samsung Refrigerator Side Bye Side 2Door ​Family Hub LED ចុចទឹក & Auto ice 179M 615L Black,,,,,,,,,,,,,,,,,,,,,
-,RF48A4000M9/ST, $790 ,Samsung Refrigerator 4Door Twin Cooling Plus 1.80M 488L Silver,,,,,,,,,,,,,,,,,,,,,
-,RF48A4010B4/ST, $825 ,Samsung Refrigerator 4Door Twin Cooling Plus 1.80M 488L Black,,,,,,,,,,,,,,,,,,,,,
-,Washing Machine,,,,,,,,,,,,,,,,,,,,,,,
-,WA75H4000SG/ST , $155 ,Samsung Washing Machine 7.5KG Top Load,,,,,,,,,,,,,,,,,,,,,
-,WA10CG4545BYST, $222 ,Samsung Washing Machine 10KG Inverter Top Load Gray,,,,,,,,,,,,,,,,,,,,,
-,WA12CG5441BYST, $245 ,Samsung Washing Machine 12KG Inverter Top Load Gray,,,,,,,,,,,,,,,,,,,,,
-,WA40F12E4CST, $250 ,Samsung Washing Machine 12KG Ecobubble™ Top Load Deep Charoal,,,,,,,,,,,,,,,,,,,,,
-,WA40F12E4BST, $250 ,Samsung Washing Machine 12KG Washer Ecobubble™ Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WA70F13E4LST, $260 ,Samsung Washing Machine 13KG Ecobubble Top Load Gray,,,,,,,,,,,,,,,,,,,,,
-,WA70F15E4CST, $330 ,Samsung Washing Machine 15KG Ecobubble Top Laod Black,,,,,,,,,,,,,,,,,,,,,
-,WA80F17S8BST, $370 ,Samsung Washing Machine 17KG Bespoke AI Wash Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WA40F19E7CST, $390 ,Samsung Washing Machine 19KG Top Load with Ecobubble & Low Water Pressure Black,,,,,,,,,,,,,,,,,,,,,
-,WA80F19S8BST , $435 ,Samsung Washing Machine 19KG Bespoke AI & AI Wash Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WA80F21S8BST, $500 ,Samsung Washing Machine 21KG Bespoke AI Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WA25B8377GV/ST, $570 ,Samsung Washing Machine 25KG BubbleStorm Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WT13B5040BA/ST, $179 ,Samsung Washing Machine ធុងភ្លោះ 13KG Top Load,,,,,,,,,,,,,,,,,,,,,
-,WT14B5040BA/ST, $195 ,Samsung Washing Machine ធុងភ្លោះ 14KG Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WT16B5240BA/ST, $215 ,Samsung Washing Machine ធុងភ្លោះ 16KG Top Load Black,,,,,,,,,,,,,,,,,,,,,
-,WW80FG3M05TWST, $300 ,Samsung Washing Machine 8KG Hygiene Steam Front Load White,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WW90FG3M05TWST, $335 ,Samsung Washing Machine 9KG Front Laod White,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WW10DB7U94GBST, $515 ,Samsung Washing Machine 10KG AI Energy and AI Wash Front Load Black,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WW10DG5U34AEST, $465 ,Samsung Washing Machine 10KG AI Energy and AI Ecobubble Front Load White,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WW12CGP44DSBST, $535 ,Samsung Washing Machine 12KG AI EcoBubbleᵀᴹ+ Front Load Balck,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WW13T504DAB/ST, $610 ,Samsung Washing Machine 13KG EcoBubble™ & AI Energy Mode Front Load Black,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WW13BB944DGHST, $660 ,Samsung Washing Machine 13KG Bespoke AI™ AI Wash Front Laod White,Free ជើងទម្រសាមសុង F002,,,,,,,,,,,,,,,,,,,,
-,WF16T6500GV/ST, $680 ,Samsung Washing Machine 16KG Eco Bubble Front Load,,,,,,,,,,,,,,,,,,,,,
-,WF90F25ADSST, $885 ,Samsung Washing Machine 25KG Bespoke AI front-loading with AI Home,,,,,,,,,,,,,,,,,,,,,
-,Wash & Dry ,,,,,,,,,,,,,,,,,,,,,,,
-,WD12DG6B85BBST, $680 ,Samsung Wash 12KG Dry 7KG AI EcoBubbleᵀᴹ+ Front Load Black,,,,,,,,,,,,,,,,,,,,,
-,WD16T6500GV/ST, $850 ,Samsung Wash 16KG/Dry 10KG Front Load Black,,,,,,,,,,,,,,,,,,,,,
-,WD90F21BCSST, $970 ,Samsung Wash 21KG & Dryer 11KG Front Load,,,,,,,,,,,,,,,,,,,,,
-,WD25DB8995BZST," $2,600 ",Samsung Wash 25KG & Dryer 15KG Front Load (Premium),,,,,,,,,,,,,,,,,,,,,
-,Dryer,,,,,,,,,,,,,,,,,,,,,,,
-,DV10BB9440GHST, $865 ,Samsung ម៉ាស៊ីនសម្ងួត 10KG Front Load White,,,,,,,,,,,,,,,,,,,,,
-,DV90F17CDSST, $975 ,Samsung Dryer Bespoke AI Hybrid Heat Pump 17KG,,,,,,,,,,,,,,,,,,,,,
-,Air Dresser ម៉ាស៊ីនចំហុយខោអាវ,,,,,,,,,,,,,,,,,,,,,,,
-,DF24CB9900CRST," $1,930 ",Samsung AirDresser Dual AirWash and Dual JetSteam Cystal Mirror,,,,,,,,,,,,,,,,,,,,,
-,Microwave,,,,,,,,,,,,,,,,,,,,,,,
-,MS20A3010AL/ST, $65 ,Samsung Microwave oven 20L Glass Black,,,,,,,,,,,,,,,,,,,,,
-,MS23K3513AW/ST, $77 ,Samsung Microwave Oven Warming Food 23L,,,,,,,,,,,,,,,,,,,,,
-,MS30T5018UK/ST, $119 ,Samsung Microwave oven Food Warmer 30L Black,,,,,,,,,,,,,,,,,,,,,
-,MG23K3515AK/ST, $88 ,Samsung  Microwave Warm & Grill 23L 1250W,,,,,,,,,,,,,,,,,,,,,
-,MG23K3575AS/ST, $99 ,Samsung Microwave Oven Warm & Grill 23L,,,,,,,,,,,,,,,,,,,,,
-,MG23T5018CY/ST, $145 ,Samsung Microwave Grill Fry 23L Sky Blue,,,,,,,,,,,,,,,,,,,,,
-,MG23T5018CC/ST, $115 ,Samsung Microwave Grill Fry 23L Black,,,,,,,,,,,,,,,,,,,,,
-,MG30T5018CK/ST, $137 ,"Samsung Microwave Oven Food Warmer ,Gril, Fryl 30L",,,,,,,,,,,,,,,,,,,,,
-,MC32DB7746KEST, $360 ,Samsung Microwave 32L 1400W Smart Convection Clean White,,,,,,,,,,,,,,,,,,,,,
-,Soundbar,,,,,,,,,,,,,,,,,,,,,,,
-,HW-Q990F/XT, $611 ,Samsung Soundbar 11.1.4 ch Subwoofer & Rear Speaker,,,,,,,,,,,,,,,,,,,,,
-,HW-Q930F/XT, $491 ,Samsung Soundbar Q930F Q-Series Wireless Dolby Atmos 9.1.4ch,,,,,,,,,,,,,,,,,,,,,
-,HW-Q800F/XT, $376 ,Samsung Soundbar Q-series 5.1.2 ch Subwoofer Black,,,,,,,,,,,,,,,,,,,,,
-,HW-S800B/XT, $287 ,Samsung Soundbar Ultra Slim 28W Black,,,,,,,,,,,,,,,,,,,,,
-,Sound Tower,,,,,,,,,,,,,,,,,,,,,,,
-,MX-T50/XT, $175 ,Samsung Sound Tower High Power Audio 500W,,,,,,,,,,,,,,,,,,,,,
-,MX-T70/XT, $280 ,Samsung Sound Tower High Power Audio 1500W,,,,,,,,,,,,,,,,,,,,,
-,MX-ST90B/XT, $685 ,Samsung Sound Tower 1700W,,,,,,,,,,,,,,,,,,,,,
-,MX-ST50B/XT, $265 ,Samsung  Sound Tower 240W,,,,,,,,,,,,,,,,,,,,,
-,MX-ST40B/XT, $190 ,Samsung Sound Tower 160W,,,,,,,,,,,,,,,,,,,,,
-,Air Purfier,,,,,,,,,,,,,,,,,,,,,,,
-,AX32BG3100GBST, $168 ,Samsung Air Purfier Wifi 41W 32 ㎡,,,,,,,,,,,,,,,,,,,,,
-,AX46BG5000GSST, $245 ,Samsung Air Purifier 60 ㎡ 60W,,,,,,,,,,,,,,,,,,,,,
-,AX53A9370GE/ST, $479 ,Samsung Air Purifier Bespoke Cube 53 m2,,,,,,,,,,,,,,,,,,,,,
-,Vuccum,,,,,,,,,,,,,,,,,,,,,,,
-,VCC4320S3A/XST, $49 ,Samsung Vuccum Twin Chamber 1600W Blue,,,,,,,,,,,,,,,,,,,,,
-,VCC4540S36/XST, $62 ,Samsung Vuccum 1.3L 1800W,,,,,,,,,,,,,,,,,,,,,
-,VC20M2510WB/ST, $70 ,Samsung Vuccum 2.5L 2000W,,,,,,,,,,,,,,,,,,,,,
-,VC18M21M0VN/ST, $80 ,Samsung Vuccum 1.5L 1800W,,,,,,,,,,,,,,,,,,,,,
-,VC18M3110VB/ST, $75 ,Samsung Vuccum 2L 1800W,,,,,,,,,,,,,,,,,,,,,
-,VS60K6050KW/ST, $173 ,Samsung Vuccum ប្រើថ្ម  0.75L 170W White,,,,,,,,,,,,,,,,,,,,,
-,VS15A6032R7/ST, $225 ,"Samsung Vuccum Jet 60 Turbo (410W,0.8L.Rose Gold)",,,,,,,,,,,,,,,,,,,,,
-,VS15A6031R1/ST, $223 ,Samsung Vuccum Jet 60 turbo 0.8L,,,,,,,,,,,,,,,,,,,,,
-,VS20C852FTB/ST, $410 ,Samsung Vuccum Jet 85 Premium 210W HexaJet Motor Midnight Blue,,,,,,,,,,,,,,,,,,,,,
-,VS20B75AER1/ST, $292 ,Samsung SS Vuccum Cleaner Jet 75E Digital Inverter 0.8L 550W,,,,,,,,,,,,,,,,,,,,,
-,VR05R5050WK/ST, $230 ,Samsung Vuccum Robotic 0.2L 55 W,,,,,,,,,,,,,,,,,,,,,
-,VR50T95735W/ST, $860 ,Samsung Vuccum Robotic Cleaner Jet Bo + Jet AI 30W 0.2L,,,,,,,,,,,,,,,,,,,,,
-,Air Conditioner,,,,,,,,,,,,,,,,,,,,,,,
-,AR09BGHQASINSE, $225 ,Samsung Air Conditioner 1HP Non-Inverter,,,,,,,,,,,,,,,,,,,,,
-,AR18BGHQASINSE, $355 ,Samsung Air Conditioner 2HP Non-Inverter,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR10DYHZBWKNST, $265 ,Samsung Air Conditioner 1HP S-Inverter Eco Plus,,,,,,,,,,,,,,,,,,,,,
-,AR13DYHZBWKNST, $305 ,Samsung Air Conditioner 1.5HP S-Inverter Eco Plus,,,,,,,,,,,,,,,,,,,,,
-,AR18DYHZBWKNST, $415 ,Samsung Air Conditioner 2HP S-Inverter Eco Plus,,,,,,,,,,,,,,,,,,,,,
-,AR24DYHZBWKNST, $515 ,Samsung Air Conditioner 2.5HP S-Inverter Eco Plus,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR10CYHCAWKNST, $315 ,Samsung Air Conditioner Windfree 1HP Inverter R32,,,,,,,,,,,,,,,,,,,,,
-,AR13CYHCAWKNST, $340 ,Samsung Air Conditioner Windfree 1.5HP Inverter R32,,,,,,,,,,,,,,,,,,,,,
-,AR18CYHCAWKNST, $425 ,Samsung Air Conditioner Windfree 2HP Inverter R32,,,,,,,,,,,,,,,,,,,,,
-,AR24CYHCAWKNST, $530 ,Samsung Air Conditioner Windfree 2.5HP Inverter R32,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR60H09D1DWNST, $329 ,Samsung Air Conditioner 1HP BESPOKE AI WINDFREE PLUS WIFI,,,,,,,,,,,,,,,,,,,,,
-,AR60H12D1DWNST, $358 ,Samsung Air Conditioner 1.5HP BESPOKE AI WINDFREE PLUS WIFI,,,,,,,,,,,,,,,,,,,,,
-,AR60H18D1DWNST, $455 ,Samsung Air Conditioner 2HP BESPOKE AI WINDFREE PLUS WIFI,,,,,,,,,,,,,,,,,,,,,
-,AR60H24D1DWNST, $555 ,Samsung Air Conditioner 2.5HP BESPOKE AI WINDFREE PLUS WIFI,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR60F09D1CWNAF, $330 ,Samsung Air Conditioner Bespoke AI Windfree 1HP Inverter Wifi ស្លាបរេ4ទិស,,,,,,,,,,,,,,,,,,,,,
-,AR60F12D1CWNAF, $360 ,Samsung Air Conditioner Bespoke AI Windfree 1.5HP Inverter Wifi ស្លាបរេ4ទិស,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR40F09D0AMNSE, $263 ,Samsung Air Conditioner 1HP Neo Alpha Inverter,,,,,,,,,,,,,,,,,,,,,
-,AR40F12D0AMNSE, $308 ,Samsung Air Conditioner 1.5HP Neo Alpha Inverter,,,,,,,,,,,,,,,,,,,,,
-,AR40F18D0AMNSE, $405 ,Samsung Air Conditioner 2HP Neo Alpha Inverter,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR50H09D1CHNST, $295 ,Samsung Air Conditioner 1HP AI Inverter Wifi ខ្យល់ចេញ4ទិស លើក្រោមឆ្វេងស្តាំ,,,,,,,,,,,,,,,,,,,,,
-,AR50H12D1CHNST, $335 ,Samsung Air Conditioner 1.5HP AI Inverter Wifi ខ្យល់ចេញ4ទិស លើក្រោមឆ្វេងស្តាំ,,,,,,,,,,,,,,,,,,,,,
-,AR50H18D1CHNST, $425 ,Samsung Air Conditioner 2HP AI Inverter Wifi ខ្យល់ចេញ4ទិស លើក្រោមឆ្វេងស្តាំ,,,,,,,,,,,,,,,,,,,,,
-,AR50H24D1CHNST, $515 ,Samsung Air Conditioner 2.5HP AI Inverter Wifi ខ្យល់ចេញ4ទិស លើក្រោមឆ្វេងស្តាំ,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,
-,AR70H09D1DWNST, $575 ,Samsung Air Conditioner 1HP AI Windfree Plus,,,,,,,,,,,,,,,,,,,,,
-,AR70H12D1DWNST, $615 ,Samsung Air Conditioner 1.5HP AI Windfree Plus,,,,,,,,,,,,,,,,,,,,,
-,AR70H18D1DWNST, $705 ,Samsung Air Conditioner 2HP AI Windfree Plus,,,,,,,,,,,,,,,,,,,,,
-,AR70H24D1DWNST, $785 ,Samsung Air Conditioner 2.5HP AI Windfree Plus,,,,,,,,,,,,,,,,,,,,,
-,Cassette R410A,,,,,,,,,,,,,,,,,,,,,,,
-,1Way,,,,,,,,,,,,,,,,,,,,,,,
-,AC035TN1DKC/TS, $615 ,Samsung 1 Way Cassette WindFree 1.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC052TN1DKC/TS, $775 ,Samsung 1 Way Cassette WindFree 2HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC071TN1DKC/TS, $905 ,Samsung 1 Way Cassette WindFree 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,4Ways,,,,,,,,,,,,,,,,,,,,,,,
-,AC052TN4DKC/TS, $780 ,Samsung 4 Ways Cassette Wind-Free 2HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC071TN4DKC/TS, $895 ,Samsung 4 Ways Cassette Wind-Free 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC100TN4DKC/TS," $1,160 ",Samsung 4 Ways Cassette Wind-Free 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC120TN4DKC/TS," $1,315 ",Samsung 4 Ways Cassette Wind-Free 4HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC140TN4DKC/TS," $1,335 ",Samsung 4 Ways Cassette Wind-Free 5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC120TN4DKC/TS /AC120TXADNC/TS," $1,345 ","Samsung 4 Ways Cassette Wind-Free 4HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,AC140TN4DKC/TS /AC140TXADNC/TS," $1,365 ","Samsung 4 Ways Cassette Wind-Free 5HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,360,,,,,,,,,,,,,,,,,,,,,,,
-,AC052TN4PKC/TS, $840 ,Samsung Casstte 360 2HP Invertert,,,,,,,,,,,,,,,,,,,,,
-,AC071TN4PKC/TS, $960 ,Samsung Casstte 360 2.5HP Invertert,,,,,,,,,,,,,,,,,,,,,
-,AC100TN4PKC/TS," $1,225 ",Samsung Casstte 360 3.5HP Invertert,,,,,,,,,,,,,,,,,,,,,
-,AC120TN4PKC/TS," $1,395 ",Samsung Casstte 360 4HP Invertert,,,,,,,,,,,,,,,,,,,,,
-,AC140TN4PKC/TS," $1,425 ",Samsung Casstte 360 5HP Invertert,,,,,,,,,,,,,,,,,,,,,
-,AC120TN4PKC/TS /AC120TXADNC/TS," $1,425 ","Samsung Casstte 360 4HP Invertert, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,AC140TN4PKC/TS /AC140TXADNC/TS," $1,455 ","Samsung Casstte 360 5HP Invertert, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,Concealed Duct,,,,,,,,,,,,,,,,,,,,,,,
-,AC035TNLDKC/TS, $535 ,Samsung Concealed Duct 1.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC052TNLDKC/TS, $715 ,Samsung Concealed Duct 2HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC071TNMDKC/TS, $878.00 ,Samsung Concealed Duct 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,Cassette R32,,,,,,,,,,,,,,,,,,,,,,,
-,1way,,,,,,,,,,,,,,,,,,,,,,,
-,AC035DN1DKF/TS /AC035DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC052DN1DKF/TS /AC052DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC071DN1DKF/TS /AC071DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,360,,,,,,,,,,,,,,,,,,,,,,,
-,AC052DN6DKF/TS /AC052DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC071DN6DKF/TS /AC071DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC100DN6DKF/TS /AC100DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC140DN6DKF/TS /AC140DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC100DN6DKF/TS /AC100DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC140DN6DKF/TS /AC140DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,4ways,,,,,,,,,,,,,,,,,,,,,,,
-,AC052DN4DKF/TS /AC052DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC071DN4DKF/TS /AC071DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC100DN4DKF/TS /AC100DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC140DN4DKF/TS /AC140DXADKF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC100DN4DKF/TS /AC100DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC140DN4DKF/TS /AC140DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,AC160DN4DKF/TS /AC160DXADNF/TS,,,,,,,,,,,,,,,,,,,,,,,
-,Concealed Duct,,,,,,,,,,,,,,,,,,,,,,,
-,AC035TNLDKC/TS /AC035TXADKC/TS,,Samsung Concealed Duct 1.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC052TNLDKC/TS /AC052DXADKF/TS,,Samsung Concealed Duct 2HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC071DXADKF/TS /AC071DXADKF/TS,,Samsung Concealed Duct 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC100DNMDKF/TS /AC100DXADKF/TS,,Samsung Concealed Duct 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC140DNMDKF/TS /AC140DXADKF/TS,,Samsung Concealed Duct 5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC160TNMDKC/TS/AC160TXADKC/TS,,Samsung Concealed Duct 6HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC100DNMDKF/TS/AC100DXADNF/TS,,"Samsung Concealed Duct 3.5HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,AC140DNMDKF/TS/AC140DXADNF/TS,,"Samsung Concealed Duct 5HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,AC160DNMDKF/TS/AAC160DXADNF/TS,,"Samsung Concealed Duct 6HP Inverter, (3Phase)",,,,,,,,,,,,,,,,,,,,,
-,Under Ceiling,,,,,,,,,,,,,,,,,,,,,,,
-,AC052DNCDKF/TS /AC052DXADKF/TS,,Samsung Under Ceilling 2HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC071DNCDKF/TS /AC071DXADKF/TS,,Samsung Under Ceilling 2.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC100DNCDKF/TS /AC100DXADKF/TS,,Samsung Under Ceilling 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC140DNCDKF/TS /AC140DXADKF/TS,,Samsung Under Ceilling 5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC100DNCDKF/TS /AC100DXADNF/TS,,Samsung Under Ceilling 3.5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC140DNCDKF/TS /AC140DXADNF/TS,,Samsung Under Ceilling 5HP Inverter,,,,,,,,,,,,,,,,,,,,,
-,AC160DNCDKF/TS /AC160DXADNF/TS,,Samsung Under Ceilling 6HP Inverter,,,,,,,,,,,,,,,,,,,,,</script>
+<script id="embeddedCSV" type="text/csv">CATEGORY,MODEL,PRICE,DESCRIPTION,REMARKS
+Entry QLED,QA43Q7F4AKXXT,$247 ,"43"" Entry QLED 4K",
+Entry QLED,QA50Q7F4AKXXT,$325 ,"50"" Entry QLED 4K",
+Entry QLED,QA65Q7F4AKXXT,$558 ,"65"" Entry QLED 4K",
+Entry QLED,QA75Q7F4AKXXT,$825 ,"75"" Entry QLED 4K",
+Entry QLED,QA85Q7F4AKXXT,"$1,215 ","85"" Entry QLED 4K",
+Premium QLED,QA65Q8F5AKXXT,$630 ,"65"" QLED",
+Premium QLED,QA85Q8F5AKXXT,"$1,350 ","85"" QLED",
+The Frame,QA43LS03AAKXXT,$689 ,"The Frame TV 43""",
+The Frame,QA55LS03FAKXXT,$931 ,"The Frame TV 55""",
+The Frame,QA65LS03HEKXXT,"$1,324 ","The Frame TV 65"" New",
+The Frame,QA85LS03HEKXXT,"$2,695 ",The Frame LS03HE Vision AI Smart TV 85 Inch 4K QLED,
+Sero,QA43LS05BBKXXT,$890 ,The Sero,
+Micro RGB,MRA65R85HAKXXT,"$3,085 ",Micro RGB 65 Inches- 2026,
+Micro RGB,MRA75R85HAKXXT,"$4,195 ",Micro RGB 75 Inches- 2026,
+Micro RGB,MRA85R85HAKXXT,"$5,455 ",Micro RGB 85 Inches- 2026,
+Serif,QA55LS01DAKXXT,"$1,055 ","Serif 55""",
+Serif,QA65LS01DAKXXT,"$1,195 ","Serif 65""",
+Neo QLED,QA85QN90FAKXXT,"$2,280 ","Neo QLED 85""",
+Neo QLED,QA100QN80HKXXT,"$4,365 ","100"" Neo QLED QN80H 4K Samsung Vision AI Smart TV",
+OLED,QA55S90HAKXXT,"$1,455 ","55"" OLED S90H 4K Samsung Vision AI Smart TV",
+OLED,QA65S90HAKXXT,"$1,833 ","65"" OLED S90H 4K Samsung Vision AI Smart TV",
+OLED,QA77S90HAKXXT,"$2,808 ","75"" OLED S90H 4K Samsung Vision AI Smart TV",
+OLED,QA83S90HAEXXT,"$4,095 ","85"" OLED S90H 4K Samsung Vision AI Smart TV",
+AI QLED by Mini LED,UA43M70HAKXKH,$280 ,"AI QLED by Mini LED - 43""",
+AI QLED by Mini LED,UA50M70HAKXKH,$373 ,"AI QLED by Mini LED - 50""",
+AI QLED by Mini LED,UA55M70HAKXKH,$410 ,"AI QLED by Mini LED - 55""",
+AI QLED by Mini LED,UA65M70HAKXKH,$608 ,"AI QLED by Mini LED - 65""",
+AI QLED by Mini LED,UA75M70HAKXKH,$825 ,"AI QLED by Mini LED - 75""",
+AI QLED by Mini LED,UA85M70HAKXKH,"$1,310 ","AI QLED by Mini LED - 85""",
+PREMIUM AI QLED M80,UA55M80HAKXXT,$500 ,"PREMIUM AI QLED by Mini LED - 55"" (Refresh Rate 144Hz)",
+PREMIUM AI QLED M81,UA65M80HAKXXT,$703 ,"PREMIUM AI QLED by Mini LED - 65"" (Refresh Rate 144Hz)",
+PREMIUM AI QLED M82,UA75M80HAKXXT,"$1,035 ","PREMIUM AI QLED by Mini LED - 75"" (Refresh Rate 144Hz)",
+PREMIUM AI QLED M83,UA85M80HAKXXT,"$1,535 ","PREMIUM AI QLED by Mini LED - 85"" (Refresh Rate 144Hz)",
+AI Crystal UHD 4K,UA43U8000HKXKH,$255 ,"AI Crystal UHD 4K - 43""",
+AI Crystal UHD 4K,UA50U8000HKXKH,$307 ,"AI Crystal UHD 4K - 50""",
+AI Crystal UHD 4K,UA55U8000HKXKH,$365 ,"AI Crystal UHD 4K - 55""",
+AI Crystal UHD 4K,UA65U8000HKXKH,$515 ,"AI Crystal UHD 4K - 65""",
+AI Crystal UHD 4K,UA75U8000HKXKH,$685 ,"AI Crystal UHD 4K - 75""",
+AI Crystal UHD 4K,UA85U8000HKXKH,$990 ,"AI Crystal UHD 4K - 85""",
+Crystal UHD U9500H,UA98U9500HKXXT,"$3,300 ",Crystal UHD U9500H Vision AI Smart TV 98 Inch 4K UHD LED,
+The Moving Style TV,UA27LSM7FAXXXT,"$1,050 ","27"" The Movingstyle LSM7F QHD Touch Interaction Movable Screen",
+"32"" Smart",LS32H5000FKXXT,$140 ,SAMSUNG 32 Smart TV,
+"40"" QLED SMART TV",QA40Q5FAAKXXT,$235 ,"SAMSUNG 40"" QLED SMART TV",
+"43"" FHD Smart",UA43F6000FKXXT,$210 ,"SS 43"" FULL HD TV",
+BIZ UHD - 4K (16H Operating),LH43BEFHVGKXG,$220 ,"SS 43"" 4K Smart TV - 16H Operating",
+Front Load Washing Machine,WW80FG3M05TWST,$285 ,Drum 8kg (New),
+Front Load Washing Machine,WW90FG3M05TWST,$305 ,Drum 9kg (New),
+Front Load Washing Machine,WW10DG5U34AEST,$470 ,Drum 10kg - White,
+Front Load Washing Machine,WW10DG6U34LEST,$450 ,Drum 10kg - White Premium,
+Front Load Washing Machine,WW10DB7U94GBST,$505 ,Drum 10kg - Black,
+Front Load Washing Machine,WW12CGP44DSBST,$525 ,Drum 12kg - Black,
+Front Load Washing Machine,WW13T504DAB/ST,$595 ,Drum 13kg - Black,
+Front Load Washing Machine,WW13BB944DGHST,$655 ,Drum Bespoke 13kg - White,
+Front Load Washing Machine,WF18FG940CGVST,$735 ,Drum - 18kg - Black (Operating 24H),
+Front Load Washing Machine,WF16T6500GV/ST,$665 ,Drum 16kg - Black,
+Wash & Dry / Front Load,WD12DG6B85BBST,$665 ,Wash & Dry 12kg,
+Wash & Dry / Front Load,WD16T6500GV/ST,$830 ,Wash & Dry 16kg,
+Wash & Dry / Front Load,WD90F21BCSST,$975 ,Wash & Dryer - 21kg New 2025,
+Wash & Dry / Front Load,WD25DB8995BZST,"$2,500 ",Wash & Dry 25kg New 2025,
+Wash & Dry / Front Load,WF90F25ADSST,$850 ,Front Load - 25 kg New 2025,
+Top Load Entry Washing Machine,WA75H4000SG/ST,$152 ,7.5kg Top Load,
+Top Load Entry Washing Machine,WA10CG4545BYST,$225 ,10kg Top Load,
+Top Load Entry Washing Machine,WA12CG5441BYST,$245 ,12kg Samsung,
+Top Load Entry Washing Machine,WA40F12E4CST,$255 ,12kg SAMSUNG 2026 - Color Chacoal,
+Top Load Entry Washing Machine,WA40F12E4BST,$255 ,12kg SAMSUNG 2026 - Color Black,
+Top Load Entry Washing Machine,WA70F13E4LST,$270 ,13kg / Smart Thing / AI - Lavender Gray -Wifi,
+Top Load Entry Washing Machine,WA70F15E4CST,$330 ,15kg / Smart Thing / AI - Black,
+Top Load Entry Washing Machine,WA80F17S8BST,$375 ,17kg / Smart Thing / AI - Black,
+Top Load Entry Washing Machine,WA80F19S8BST,$455 ,19kg / Smart Thing / AI - Black,
+Top Load Entry Washing Machine,WA80F21S8BST,$510 ,21kg / Smart Thing / AI - Black,
+Top Load Entry Washing Machine,WA25B8377GV/ST,$580 ,25kg / Smart Thing / AI - Black,
+Side by Side Refrigerator,RF48A4000M9/ST,$829 ,Silver 4 door,
+Side by Side Refrigerator,RF48A4010B4/ST,$868 ,Black 4 door,
+Side by Side Refrigerator,RS57DG4000M9ST,$772 ,SS Refrigerator RS57 SBS SpaceMax™ Gentle Silver Matt,
+Side by Side Refrigerator,RS57DG4100B4ST,$837 ,Black,
+Side by Side Refrigerator,RS62R5001B4/ST,$800 ,Side by side RS62R5001B4/ST refrigerator,
+Side by Side Refrigerator,RS70F65K1BST,"$1,129 ",Bespoke,
+Side by Side Refrigerator,RS70F65Q1BST,"$1,056 ",Black,
+Side by Side Refrigerator,RS70F65Q2FST,$797 ,Black,
+Side by Side Refrigerator,RS80F65G1FST,"$1,485 ",MultiDoor 3 Door,
+Side by Side Refrigerator,RS90F65D2FST,"$1,708 ",Family Hub (LCD AI 9inch),
+Side by Side Refrigerator,RS90F65A2FST,"$2,272 ",Family Hub,
+TMF Model Refrigerator,RT42CB664412ST,$523 ,Bespoke White,
+TMF Model Refrigerator,RT42CB664422ST,$528 ,Bespoke Black,
+TMF Model Refrigerator,RT42CB66448CST,$528 ,Bespoke Pink,
+TMF Model Refrigerator,RT42CB6644C2ST,$502 ,Brown,
+TMF Model Refrigerator,RT42CG6644S9ST,$492 ,Silver,
+TMF Model Refrigerator,RT47CB668422ST,$653 ,Bespoke Black,
+TMF Model Refrigerator,RT47CG6644S9ST,$579 ,Silver,
+TMF Model Refrigerator,RT53DG7A14S9ST,$709 ,Silver,
+TMF Model Refrigerator,RT62K7150BS/ST,$817 ,Black,
+2 Doors Entry Refrigerator,RT20HAR1DSA/ST,$228 ,Silver RT20H,
+2 Doors Entry Refrigerator,RT22FARBDS8/UN,$255 ,Silver RT22,
+2 Doors Entry Refrigerator,RT25FARBDS8/UN,$300 ,Silver RT25 + Cool Pack,
+2 Doors Entry Refrigerator,RT22FGRADB1/ST,$275 ,Black - RT22,
+2 Doors Entry Refrigerator,RT31CG5021S9UN,$345 ,Silver RT31 + Cool Pack,
+2 Doors Entry Refrigerator,RT35CG5021S9UN,$390 ,Silver RT35 + Cool Pack,
+2 Doors Entry Refrigerator,RT38CG6020S9ST,$430 ,Silver RT38,
+2 Doors Entry Refrigerator,RT38CG6684B1ST,$490 ,RT38 Auto Ice - Black,
+RAC Neo Inverter,AR40F09D0AMNSE,$262.00 ,S-Inverter Saving 73% 1HP,
+RAC Neo Inverter,AR40F12D0AMNSE,$307.00 ,S-Inverter Saving 73% 1.5HP,
+RAC Neo Inverter,AR40F18D0AMNSE,$410.00 ,S-Inverter Saving 73% 2HP,
+RAC AI inverter,AR50H24D1CHNST,$525.00 ,AI INVERTER (Wifi & 4 Ways Swings) 2.5HP,
+RAC AI inverter,AR50H09D1CHNST,$325.00 ,AI INVERTER (Wifi & 4 Ways Swings) 1HP,
+RAC AI inverter,AR50H12D1CHNST,$360.00 ,AI INVERTER (Wifi & 4 Ways Swings) 1.5HP,
+RAC AI inverter,AR50H18D1CHNST,$435.00 ,AI INVERTER (Wifi & 4 Ways Swings) 2HP,
+RAC AI Windfree wifi,AR60H09D1DWNST,$340.00 ,AI WIND FREE PLUS (Wifi + 4 Way Swing) 1HP,
+RAC AI Windfree wifi,AR60H12D1DWNST,$375.00 ,AI WIND FREE PLUS (Wifi + 4 Way Swing) 1.5HP,
+RAC AI Windfree wifi,AR60H18D1DWNST,$460.00 ,AI WIND FREE PLUS (Wifi + 4 Way Swing) 2HP,
+RAC AI Windfree wifi,AR60H24D1DWNST,$560.00 ,AI WIND FREE PLUS (Wifi + 4 Way Swing) 2.5HP,
+RAC AI Wndfree wifi Pro,AR70H09D1DWNST,$650.00 ,AI Bespoke Wind Free Pro 1HP,
+RAC AI Wndfree wifi Pro,AR70H12D1DWNST,$680.00 ,AI Bespoke Wind Free Pro 1.5HP,
+RAC AI Wndfree wifi Pro,AR70H18D1DWNST,$800.00 ,AI Bespoke Wind Free Pro 2HP,
+RAC AI Wndfree wifi Pro,AR70H24D1DWNST,$910.00 ,AI Bespoke Wind Free Pro 2.5HP,
+RAC Non Inverter,AR18BGHQASINSE,$350.00 ,Non Inverter 2HP,
+RAC Eco Inverter,AR13DYHZBWKNST,$290.00 ,Inverter Eco Plus 1.5HP,
+RAC Eco Inverter,AR18DYHZBWKNST,$390.00 ,Inverter Eco Plus 2HP,Clear Stock ???? - ??????????????????
+RAC Eco Inverter,AR24DYHZBWKNST,$480.00 ,Inverter Eco Plus 2.5HP,Clear Stock ???? - ??????????????????
+RAC Windfree,AR13CYHCAWKNST,$320.00 ,Wind Free 1.5HP,Clear Stock ???? - ??????????????????
+RAC Windfree,AR18CYHCAWKNST,$415.00 ,Wind Free 2HP,Clear Stock ???? - ??????????????????
+RAC Windfree Bespoke,AR60F09D1CWNAF,$300.00 ,Wind Free Bespoke 1HP - Wifi,Clear Stock ???? - ??????????????????
+RAC Windfree Bespoke,AR60F12D1CWNAF,$325.00 ,Wind Free Bespoke 1.5HP - Wifi,Clear Stock ???? - ??????????????????
+CAC 1 Way Cassette,AC026DN1DKF/TS / AC026DXADKF/TS,$625 ,1ways cassette Inverter Full Set 2.6kW,
+CAC 1 Way Cassette,AC035DN1DKF/TS / AC035DXADKF/TS,$680 ,1ways cassette Inverter Full Set 3.5kW,
+CAC 1 Way Cassette,AC052DN1DKF/TS / AC052DXADKF/TS,$850 ,1ways cassette Inverter Full Set 5.2kW,
+CAC 1 Way Cassette,AC071DN1DKF/TS / AC071DXADKF/TS,"$1,032 ",1ways cassette Inverter Full Set 7.1kW,
+CAC 360 Cassette,AC052DN6DKF/TS / AC052DXADKF/TS,$910 ,360 cassette Inverter Full Set 5.2kW,
+CAC 360 Cassette,AC071DN6DKF/TS / AC071DXADKF/TS,"$1,032 ",360 cassette Inverter Full Set 7.1kW,
+CAC 360 Cassette,AC100DN6DKF/TS / AC100DXADKF/TS,"$1,326 ",360 cassette Inverter Full Set 10.0kW,
+CAC 360 Cassette,AC120DN6DKF/TS / AC120DXADKF/TS,"$1,535 ",360 cassette Inverter Full Set 12.0kW,
+CAC 360 Cassette,AC140DN6DKF/TS / AC140DXADKF/TS,"$1,595 ",360 cassette Inverter Full Set 14.0kW,
+CAC 360 Cassette,AC100DN6DKF/TS / AC100DXADNF/TS,"$1,398 ","360 cassette Inverter Full Set 10.0kW, 3phases",
+CAC 360 Cassette,AC120DN6DKF/TS / AC120DXADNF/TS,"$1,550 ","360 cassette Inverter Full Set 12.0kW, 3phases",
+CAC 360 Cassette,AC140DN6DKF/TS / AC140DXADNF/TS,"$1,605 ","360 cassette Inverter Full Set 14.0kW, 3phases",
+CAC 4 Ways Cassette,AC052DN4DKF/TS / AC052DXADKF/TS,$858 ,4ways cassette Inverter Full Set 5.2kW,
+CAC 4 Ways Cassette,AC071DN4DKF/TS / AC071DXADKF/TS,"$1,030 ",4ways cassette Inverter Full Set 7.1kW,
+CAC 4 Ways Cassette,AC100DN4DKF/TS / AC100DXADKF/TS,"$1,300 ",4ways cassette Inverter Full Set 10.0kW,
+CAC 4 Ways Cassette,AC120DN4DKF/TS / AC120DXADKF/TS,"$1,495 ",4ways cassette Inverter Full Set 12.0kW,
+CAC 4 Ways Cassette,AC140DN4DKF/TS / AC140DXADKF/TS,"$1,538 ",4ways cassette Inverter Full Set 14.0kW,
+CAC 4 Ways Cassette,AC100DN4DKF/TS / AC100DXADNF/TS,"$1,335 ","4ways cassette Inverter Full Set 10.0kW, 3phases",
+CAC 4 Ways Cassette,AC120DN4DKF/TS / AC120DXADNF/TS,"$1,508 ","4ways cassette Inverter Full Set 12.0kW, 3phases",
+CAC 4 Ways Cassette,AC140DN4DKF/TS / AC140DXADNF/TS,"$1,545 ","4ways cassette Inverter Full Set 14.0kW, 3phases",
+CAC 4 Ways Cassette,AC160DN4DKF/TS / AC160DXADNF/TS,"$1,670 ","4ways cassette Inverter Full Set 16.0kW, 3phases",
+CAC Concealed duct,AC052DNMDKF/TS / AC052DXADKF/TS,$829 ,Ducted Type Inverter Full Set 5.2kW,
+CAC Concealed duct,AC071DNMDKF/TS / AC071DXADKF/TS,$971 ,Ducted Type Inverter Full Set 7.1kW,
+CAC Concealed duct,AC100DNMDKF/TS / AC100DXADKF/TS,"$1,273 ",Ducted Type Inverter Full Set 10.0kW,
+CAC Concealed duct,AC120DNMDKF/TS / AC120DXADKF/TS,"$1,447 ",Ducted Type Inverter Full Set 12.0kW,
+CAC Concealed duct,AC140DNMDKF/TS / AC140DXADKF/TS,"$1,499 ",Ducted Type Inverter Full Set 14.0kW,
+CAC Concealed duct,AC100DNMDKF/TS / AC100DXADNF/TS,"$1,308 ","Ducted Type Inverter Full Set 10.0kW, 3phases",
+CAC Concealed duct,AC120DNMDKF/TS / AC120DXADNF/TS,"$1,461 ","Ducted Type Inverter Full Set 12.0kW, 3phases",
+CAC Concealed duct,AC140DNMDKF/TS / AC140DXADNF/TS,"$1,506 ","Ducted Type Inverter Full Set 14.0kW, 3phases",
+CAC Concealed duct,AC160DNMDKF/TS / AC160DXADNF/TS,"$1,715 ","Ducted Type Inverter Full Set 16.0kW, 3phases",
+CAC Concealed duct,MDP-G075SQDZ,$35 ,Drain Pump for Ducted Type 2-5HP,
+CAC Concealed duct,MDP-M075SGU2D,$35 ,Drain Pump for Ducted Type 6HP,
+CAC Ceiling Suspended,AC071DNCDKF/TS / AC071DXADKF/TS,"$1,072 ",Ceiling Inverter Full Set 7.1kW,
+CAC Ceiling Suspended,AC100DNCDKF/TS / AC100DXADKF/TS,"$1,327 ",Ceiling Inverter Full Set 10.0kW,
+CAC Ceiling Suspended,AC120DNCDKF/TS / AC120DXADKF/TS,"$1,431 ",Ceiling Inverter Full Set 12.0kW,
+CAC Ceiling Suspended,AC140DNCDKF/TS / AC140DXADKF/TS,"$1,608 ",Ceiling Inverter Full Set 14.0kW,
+CAC Ceiling Suspended,AC100DNCDKF/TS / AC100DXADNF/TS,"$1,362 ","Ceiling Inverter Full Set 10.0kW, 3phases",
+CAC Ceiling Suspended,AC120DNCDKF/TS / AC120DXADNF/TS,"$1,445 ","Ceiling Inverter Full Set 12.0kW, 3phases",
+CAC Ceiling Suspended,AC140DNCDKF/TS / AC140DXADNF/TS,"$1,615 ","Ceiling Inverter Full Set 14.0kW, 3phases",
+CAC Ceiling Suspended,AC160DNCDKF/TS / AC160DXADNF/TS,"$1,760 ","Ceiling Inverter Full Set 16.0kW, 3phases",
+VideoWall,LH46VMBUBGBXXT,$761 ,3.5mm,
+VideoWall,LH55VMBUBGBXXT,$965 ,3.5mm,
+VideoWall,LH55VMCEBGBXXT,"$1,235 ",1.8mm,
+VideoWall,LH55VHCEBGBXXT,"$1,464 ",1.8mm,
+VideoWall,LH55VMCRBGBXXT,"$1,687 ",0.88mm,
+VideoWall,LH55VHCRBGBXXT,"$1,875 ",0.88mm,
+Flip / WAF,LH65WAFWLGCXXS,$953 ,Octa Core + Google Play Store,
+Flip / WAF,LH75WAFWLGCXXS,"$1,294 ",Octa Core + Google Play Store,
+Flip / WAF,LH86WAFWLGCXXS,"$1,661 ",Octa Core + Google Play Store,
+Flip / WAF,LH65WAFPLGCXXS,"$1,384 ",Flip Android with Camera,
+Flip / WAF,LH75WAFPLGCXXS,"$1,819 ",Flip Android with Camera,
+Flip / WAF,LH86WAFPLGCXXS,"$2,348 ",Flip Android with Camera,
+Flip / WAF,LH55WMFWBGCXXT,"$1,004 ",Flip Pro,
+Flip / WAF,CY-TF65BBCXXT,$283 ,Flip Tray / Accessories,
+Flip / WAF,STN-WM55RXXT,$480 ,Stand,
+Flip / WAF,LH65WMFWBGCXXT,"$1,317 ",Flip Pro,
+Flip / WAF,WMN-WM65RXXT,$413 ,Wall Mount,
+QBC 16H,LH13QBCEBGBXXT,$203 ,"13""",
+QBC 16H,LH13QBCTBGBXXT,$284 ,"13"" Touch",
+QBC 16H,LH24QBCEBGCXXT,$230 ,"32""",
+QBC 16H,LH24QBCTBGCXXY,$392 ,"43"" Touch",
+QBC 16H,LH43QBCEBGCXXT,$353 ,"43""",
+QBC 16H,LH50QBCEBGCXXT,$408 ,"50""",
+QBC 16H,LH55QBCEBGCXXT,$477 ,"55""",
+QBC 16H,LH65QBCEBGCXXY,$681 ,"65""",
+QBC 16H,LH75QBCEBGCXXY,$940 ,"75""",
+QBC 16H,LH85QBCEBGCXXY,"$1,551 ","85""",
+QMC 24H,LH32QMCEPGCXXT,$271 ,"32""",
+QMC 24H,LH43QMCEPGCXXT,$393 ,"43""",
+QMC 24H,LH50QMCEPGCXXT,$462 ,"50""",
+QMC 24H,LH55QMCEBGCXXT,$557 ,"55""",
+QMC 24H,LH65QMCEBGCXXT,$735 ,"65""",
+QMC 24H,LH75QMCEBGCXXT,"$1,008 ","75""",
+QMC 24H,LH85QMCEBGCXXT,"$1,780 ","85""",
+QMC 24H,LH98QMCEBGCXXT,"$3,712 ","98""",
+QHC 24H Premium,LH43QHCEBGCXXT,$434 ,"43""",
+QHC 24H Premium,LH50QHCEBGCXXT,$529 ,"50""",
+QHC 24H Premium,LH55QHCEBGCXXT,$598 ,"55""",
+QHC 24H Premium,LH65QHCEBGCXXT,$843 ,"65""",
+QHC 24H Premium,LH75QHCEBGCXXT,"$1,115 ","75""",
+QHC 24H Premium,LH98QHCEBGCXXT,"$3,644 ","98""",
+QHC 24H Premium,LH115QHFEBGXXT,"$10,005 ","115""",
+BiZ TV,LH43BEFHVGKXXT,$252 ,"43"" Biz TV",
+HTV,HG43U800FAW,$313 ,"43"" Hotel TV",
+HTV,HG50U800FAW,$381 ,"50"" Hotel TV",
+HTV,HG55U800FAW,$443 ,"55"" Hotel TV",
+HTV,HG65U800FAW,$627 ,"65"" Hotel TV",
+HTV,HG75U800FAW,$887 ,"75"" Hotel TV",
+HTV,HG85U800FAW,"$1,232 ","85"" Hotel TV",
+HTV,HG43U700FAW,$272 ,"43"" Hotel TV",
+HTV,HG50U700FAW,$327 ,"50"" Hotel TV",
+HTV,HG55U700FAW,$396 ,"55"" Hotel TV",
+HTV,HG65U700FAW,$533 ,"65"" Hotel TV",
+CAC 1 Way Cassette R410,AC035TN1DKC/TS/AC035TXADKC/TS,$615.00 ,1ways cassette Inverter Full Set 3.5kW,
+CAC 1 Way Cassette R410,AC052TN1DKC/TS/AC052TXADKC/TS,$775.00 ,1ways cassette Inverter Full Set 5.2kW,
+CAC 1 Way Cassette R410,AC071TN1DKC/TS/AC071TXADKC/TS,$905.00 ,1ways cassette Inverter Full Set 7.1kW,
+CAC 360 Cassette R410,AC052TN4PKC/TS/AC052TXADKC/TS,$840.00 ,360 cassette Inverter Full Set 5.2kW,
+CAC 360 Cassette R410,AC071TN4PKC/TS/AC071TXADKC/TS,$960.00 ,360 cassette Inverter Full Set 7.1kW,
+CAC 360 Cassette R410,AC100TN4PKC/TS/AC100TXADKC/TS,"$1,225.00 ",360 cassette Inverter Full Set 10.0kW,
+CAC 360 Cassette R410,AC120TN4PKC/TS/AC120TXADKC/TS,"$1,395.00 ",360 cassette Inverter Full Set 12.0kW,
+CAC 360 Cassette R410,AC140TN4PKC/TS/AC140TXADKC/TS,"$1,425.00 ",360 cassette Inverter Full Set 14.0kW,
+CAC 360 Cassette R410,AC120TN4PKC/TS/AC120TXADNC/TS,"$1,425.00 ","360 cassette Inverter Full Set 12.0kW, 3phases",
+CAC 360 Cassette R410,AC140TN4PKC/TS/AC140TXADNC/TS,"$1,455.00 ","360 cassette Inverter Full Set 14.0kW, 3phases",
+CAC 4 Ways Cassette R410,AC052TN4DKC/TS/AC052TXADKC/TS,$780.00 ,4ways cassette Inverter Full Set 5.2kW,
+CAC 4 Ways Cassette R410,AC071TN4DKC/TS/AC071TXADKC/TS,$895.00 ,4ways cassette Inverter Full Set 7.1kW,
+CAC 4 Ways Cassette R410,AC100TN4DKC/TS/AC100TXADKC/TS,"$1,160.00 ",4ways cassette Inverter Full Set 10.0kW,
+CAC 4 Ways Cassette R410,AC120TN4DKC/TS/AC120TXADKC/TS,"$1,315.00 ",4ways cassette Inverter Full Set 12.0kW,
+CAC 4 Ways Cassette R410,AC140TN4DKC/TS/AC140TXADKC/TS,"$1,335.00 ",4ways cassette Inverter Full Set 14.0kW,
+CAC 4 Ways Cassette R410,AC120TN4DKC/TS/AC120TXADNC/TS,"$1,345.00 ","4ways cassette Inverter Full Set 12.0kW, 3phases",
+CAC 4 Ways Cassette R410,AC140TN4DKC/TS/AC140TXADNC/TS,"$1,365.00 ","4ways cassette Inverter Full Set 14.0kW, 3phases",
+CAC Concealed duct R410,AC035TNLDKC/TS/AC035TXADKC/TS,$535.00 ,Ducted Type Inverter Full Set 3.5kW,
+CAC Concealed duct R410,AC052TNLDKC/TS/AC052TXADKC/TS,$715.00 ,Ducted Type Inverter Full Set 5.2kW,
+CAC Concealed duct R410,AC071TNMDKC/TS/AC071TXADKC/TS,$878.00 ,Ducted Type Inverter Full Set 7.1kW,
+CAC Concealed duct R410,AC100TNMDKC/TS/AC100TXADKC/TS,"$1,150.00 ",Ducted Type Inverter Full Set 10.0kW,
+CAC Concealed duct R410,AC120TNMDKC/TS/AC120TXADKC/TS,"$1,328.00 ",Ducted Type Inverter Full Set 12.0kW,
+CAC Concealed duct R410,AC140TNMDKC/TS/AC140TXADKC/TS,"$1,360.00 ",Ducted Type Inverter Full Set 14.0kW,
+CAC Concealed duct R410,AC160TNMDKC/TS/AC160TXADKC/TS,"$1,530.00 ",Ducted Type Inverter Full Set 16.0kW,
+CAC Concealed duct R410,AC120TNMDKC/TS/AC120TXADNC/TS,"$1,335.00 ","Ducted Type Inverter Full Set 12.0kW, 3phases",
+CAC Concealed duct R410,AC140TNMDKC/TS/AC140TXADNC/TS,"$1,365.00 ","Ducted Type Inverter Full Set 14.0kW, 3phases",
+CAC Concealed duct R410,AC160TNMDKC/TS/AC160TXADNC/TS,"$1,535.00 ","Ducted Type Inverter Full Set 16.0kW, 3phases",
+CAC Ceiling Suspended R410,AC052TNCDKC/TS/AC052TXADKC/TS,$747.00 ,2HP-Ceiling Inverter Full Set 5.2kW,
+CAC Ceiling Suspended R410,AC071TNCDKC/TS/AC071TXADKC/TS,$950.00 ,2.5HP-Ceiling Inverter Full Set 7.1kW,
+CAC Ceiling Suspended R410,AC100TNCDKC/TS/AC100TXADKC/TS,"$1,225.00 ",3HP-Ceiling Inverter Full Set 10.0kW,
+CAC Ceiling Suspended R410,AC120TNCDKC/TS/AC120TXADKC/TS,"$1,415.00 ",4HP-Ceiling Inverter Full Set 12.0kW,
+CAC Ceiling Suspended R410,AC140TNCDKC/TS/AC140TXADKC/TS,"$1,439.00 ",5HP-Ceiling Inverter Full Set 14.0kW,
+CAC Ceiling Suspended R410,AC160TNCDKC/TS/AC160TXADKC/TS,"$1,538.00 ",6HP-Ceiling Inverter Full Set 16.0kW,</script>
 
 <script>
     let db = []; let pageCount = 1; let cart = [];
@@ -433,19 +405,60 @@
         const lines = text.split(/\r?\n/);
         db = lines.slice(1).map(line => {
             const p = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            return { id: Math.random(), n: p[1]?.replace(/"/g,''), p: parseFloat(p[2]?.replace(/[^0-9.]/g,'')) || 0, d: p[3]?.replace(/"/g,'') || "" };
+            return { 
+                id: Math.random(), 
+                cat: (p[0] || '').replace(/"/g,'').trim() || "Uncategorized",
+                n: (p[1] || '').replace(/"/g,'').trim(), 
+                p: parseFloat((p[2] || '').replace(/[^0-9.]/g,'')) || 0, 
+                d: (p[3] || '').replace(/"/g,'').trim(),
+                r: (p[4] || '').replace(/"/g,'').trim()
+            };
         }).filter(i => i.n);
+
+        populateCategories();
+    }
+
+    function populateCategories() {
+        const catSelect = document.getElementById('mCategory');
+        catSelect.innerHTML = '<option value="">All Categories</option>';
+        const categories = [...new Set(db.map(item => item.cat))].sort();
+        categories.forEach(cat => {
+            if(cat) {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catSelect.appendChild(opt);
+            }
+        });
     }
 
     function handleSearch() {
-        const val = document.getElementById('mSearch').value.toLowerCase();
+        const val = document.getElementById('mSearch').value.toLowerCase().trim();
+        const selectedCat = document.getElementById('mCategory').value;
         const list = document.getElementById('results');
-        if (val.length < 4 || db.length === 0) { list.style.display = 'none'; return; }
-        const matches = db.filter(i => i.n.toLowerCase().startsWith(val)).slice(0, 10);
+        
+        if (db.length === 0 || (!selectedCat && val.length < 4)) { 
+            list.style.display = 'none'; 
+            return; 
+        }
+
+        const matches = db.filter(i => {
+            const matchesCat = selectedCat === "" || i.cat === selectedCat;
+            const modelName = (i.n || '').toLowerCase();
+            const matchesModel = val.length === 0 || modelName.includes(val);
+            return matchesCat && matchesModel;
+        });
+
+        if(matches.length === 0) {
+            list.style.display = 'none';
+            return;
+        }
+
         list.innerHTML = matches.map(m => `
             <div class="res-item" onclick="pick('${m.id}')">
                 <span class="res-name">${m.n}</span>
                 <span class="res-desc">${m.d}</span>
+                ${m.r ? `<span class="res-remarks">Remarks: ${m.r}</span>` : ''}
                 <span class="res-price">$${m.p.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
             </div>`).join('');
         list.style.display = 'block';
@@ -467,7 +480,7 @@
             const page = document.createElement('div');
             page.className = 'page'; page.id = `page-${pageCount}`;
             page.innerHTML = `<div style="font-weight:bold; font-size:9pt; margin-bottom:10px; border-bottom:1px solid #000;">Quotation Continued...</div>
-                <table id="table-${pageCount}"><thead><tr><th class="col-no">NO</th><th>ITEM & SPECIFICATION</th><th class="col-uprice">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr></thead><tbody id="tbody-${pageCount}"></tbody></table>
+                <table id="table-${pageCount}"><thead><tr><th class="col-no">NO</th><th>MODEL & SPECIFICATION</th><th class="col-uprice">UNIT PRICE</th><th class="col-qty">QTY</th><th class="col-total">TOTAL</th></tr></thead><tbody id="tbody-${pageCount}"></tbody></table>
                 <div class="pg-num-label" id="pg-label-${pageCount}"></div>`;
             document.getElementById('print-area').appendChild(page);
             item.page = pageCount;
@@ -485,7 +498,11 @@
             const rowT = item.p * item.q; gt += rowT;
             document.getElementById(`tbody-${item.page}`).innerHTML += `<tr>
                 <td class="col-no"><button class="del-btn" style="color:red; border:none; background:none;" onclick="removeItem(${idx})">×</button>${idx+1}</td>
-                <td><div contenteditable="true" onblur="updateCart(${idx},'n',this.innerText)"><b>${item.n}</b></div><div contenteditable="true" onblur="updateCart(${idx},'d',this.innerText)" style="font-size:9pt; color:#444;">${item.d}</div></td>
+                <td>
+                    <div contenteditable="true" onblur="updateCart(${idx},'n',this.innerText)"><b>${item.n}</b></div>
+                    <div contenteditable="true" onblur="updateCart(${idx},'d',this.innerText)" style="font-size:9pt; color:#444;">${item.d}</div>
+                    ${item.r ? `<div contenteditable="true" onblur="updateCart(${idx},'r',this.innerText)" style="font-size:8.5pt; color:#666; font-style:italic;">Remarks: ${item.r}</div>` : ''}
+                </td>
                 <td class="col-uprice" contenteditable="true" onblur="updateCart(${idx},'p',this.innerText)">$${item.p.toFixed(2)}</td>
                 <td class="col-qty" contenteditable="true" onblur="updateCart(${idx},'q',this.innerText)">${item.q}</td>
                 <td class="col-total">$${rowT.toLocaleString(undefined,{minimumFractionDigits:2})}</td></tr>`;
@@ -494,7 +511,7 @@
         const lp = cart.length > 0 ? cart[cart.length-1].page : 1;
         document.getElementById(`table-${lp}`).after(document.getElementById('grandTotalRow'));
         document.getElementById(`page-${pageCount}`).appendChild(document.getElementById('final-footer'));
-        for(let i=1; i<=pageCount; i++) document.getElementById(`pg-label-${i}`).innerText = `page ${i}/${pageCount}`;
+        for(let i=1; i<=pageCount; i++) document.getElementById(`pg-label-${i}`).innerText = `pages ${i}/${pageCount}`;
     }
 
     function updateCart(idx, field, val) {
@@ -517,9 +534,7 @@
         if(!text) return alert("Paste your CSV content first.");
         
         const originalDoc = document.documentElement.cloneNode(true);
-        // Inject the CSV data
         originalDoc.querySelector('#embeddedCSV').textContent = text;
-        // REMOVE THE PACKER BOX COMPLETELY
         const packerInNewFile = originalDoc.querySelector('#packerTool');
         if (packerInNewFile) packerInNewFile.remove();
         
